@@ -46,14 +46,12 @@ def search_music(query):
 @bot.message_handler(commands=['start'])
 def start(message):
     users.add(message.from_user.id)
-    bot.send_message(message.chat.id, f"""
-🤖 Video & Music Downloader Bot
-
-📥 Video linki yuboring — video yuklaydi
-🎵 Musiqa nomini yozing — musiqa yuklaydi
-
-👥 Foydalanuvchilar: {len(users)}
-""")
+    bot.send_message(message.chat.id,
+        f"🤖 Video & Music Downloader Bot\n\n"
+        f"📥 Video linki yuboring\n"
+        f"🎵 Musiqa nomini yozing\n\n"
+        f"👥 Foydalanuvchilar: {len(users)}"
+    )
 
 @bot.message_handler(func=lambda m: True)
 def handler(message):
@@ -65,21 +63,21 @@ def handler(message):
         try:
             file, title = download_video(text)
             with open(file, "rb") as v:
-                bot.send_video(message.chat.id, v, caption=f"🎬 {title}")
+                bot.send_video(message.chat.id, v, caption="🎬 " + title)
             os.remove(file)
             bot.delete_message(message.chat.id, msg.message_id)
         except Exception as e:
-            bot.reply_to(message, f"❌ Xato:\n{e}")
+            bot.reply_to(message, "❌ Xato: " + str(e))
     else:
         msg = bot.reply_to(message, "🔎 Musiqa qidirilmoqda...")
         try:
             file, title = search_music(text)
             with open(file, "rb") as a:
-                bot.send_audio(message.chat.id, a, title=title, caption=f"🎵 {title}")
+                bot.send_audio(message.chat.id, a, title=title, caption="🎵 " + title)
             os.remove(file)
             bot.delete_message(message.chat.id, msg.message_id)
         except Exception as e:
-            bot.reply_to(message, f"❌ Xato:\n{e}")
+            bot.reply_to(message, "❌ Xato: " + str(e))
 
 print("Bot ishlayapti...")
 bot.infinity_polling(skip_pending=True)
