@@ -1,12 +1,13 @@
 import telebot
 import yt_dlp
 import os
+import time
 
-TOKEN = "8624963114:AAFInEgTp0PTEQ9D1PJcMprcCtooPmxamlo"  # yangi tokenni qo'ying
+TOKEN = "86249631I4:AAFInEgTp0PTEQ9D1PJcMprcCtooPmxamlo"
 bot = telebot.TeleBot(TOKEN)
 
-# Eski so'rovlarni to'xtatish
 bot.remove_webhook()
+time.sleep(2)
 
 DOWNLOAD_FOLDER = "downloads"
 if not os.path.exists(DOWNLOAD_FOLDER):
@@ -14,7 +15,6 @@ if not os.path.exists(DOWNLOAD_FOLDER):
 
 users = set()
 
-# VIDEO YUKLASH
 def download_video(url):
     ydl_opts = {
         'format': 'best[ext=mp4]/best',
@@ -22,12 +22,6 @@ def download_video(url):
         'noplaylist': True,
         'quiet': True,
         'nocheckcertificate': True,
-        'concurrent_fragment_downloads': 10,
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android', 'web'],
-            }
-        },
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
@@ -35,42 +29,37 @@ def download_video(url):
         title = info.get("title", "Video")
     return file, title
 
-# MUSIQA QIDIRISH VA YUKLASH
 def search_music(query):
     ydl_opts = {
-        'format': 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio',
+        'format': 'bestaudio/best',
         'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
         'quiet': True,
         'nocheckcertificate': True,
         'noplaylist': True,
-        'source_address': '0.0.0.0',
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android'],
-                'player_skip': ['webpage', 'configs'],
-            }
-        },
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(f"ytsearch:{query}", download=True)['entries'][0]
         title = info['title']
         file = ydl.prepare_filename(info)
+        file = os.path.splitext(file)[0] + '.mp3'
     return file, title
 
 @bot.message_handler(commands=['start'])
 def start(message):
     users.add(message.from_user.id)
-    bot.send_message(
-        message.chat.id,
-        f"""
+    bot.send_message(message.chat.id, f"""
 🤖 Video & Music Downloader Bot
 
 📥 Video linki yuboring — video yuklaydi
 🎵 Musiqa nomini yozing — musiqa yuklaydi
 
-👥 Bot foydalanuvchilari: {len(users)}
-"""
-    )
+👥 Foydalanuvchilar: {len(users)}
+""")
 
 @bot.message_handler(func=lambda m: True)
 def handler(message):
@@ -82,31 +71,24 @@ def handler(message):
         try:
             file, title = download_video(text)
             with open(file, "rb") as v:
-                bot.send_video(
-                    message.chat.id,
-                    v,
-                    caption=f"🎬 {title}"
-                )
+                bot.send_video(message.chat.id, v, caption=f"🎬 {title}")
             os.remove(file)
             bot.delete_message(message.chat.id, msg.message_id)
         except Exception as e:
-            bot.reply_to(message, f"❌ Video yuklab bo'lmadi:\n{e}")
-
+            bot.reply_to(message, f"❌ Xato:\n{e}")
     else:
         msg = bot.reply_to(message, "🔎 Musiqa qidirilmoqda...")
         try:
             file, title = search_music(text)
             with open(file, "rb") as a:
-                bot.send_audio(
-                    message.chat.id,
-                    a,
-                    title=title,
-                    caption=f"🎵 {title}"
-                )
+                bot.send_audio(message.chat.id, a, title=title, caption=f"🎵 {title}")
             os.remove(file)
             bot.delete_message(message.chat.id, msg.message_id)
         except Exception as e:
-            bot.reply_to(message, f"❌ Musiqa topilmadi:\n{e}")
+            bot.reply_to(message, f"❌ Xato:\n{e}")
+
+print("Bot ishlayapti...")
+bot.infinity_polling(skip_pending=True)            bot.reply_to(message, f"❌ Musiqa topilmadi:\n{e}")
 
 print("Bot ishlayapti...")
 bot.infinity_polling()def search_music(query):
