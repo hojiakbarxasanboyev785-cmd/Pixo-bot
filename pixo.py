@@ -41,27 +41,13 @@ def download_video(url):
         title = info.get("title", "Video")
     return file, title
 
-def search_music(query):
-    ydl_opts = {
-        'format': 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio',
-        'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
-        'quiet': True,
-        'nocheckcertificate': True,
-        'noplaylist': True,
-    }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(f"ytsearch:{query}", download=True)['entries'][0]
-        title = info['title']
-        file = ydl.prepare_filename(info)
-    return file, title
-
 @bot.message_handler(commands=['start'])
 def start(message):
     users.add(message.from_user.id)
     bot.send_message(message.chat.id,
-        "🤖 Video & Music Downloader Bot\n\n"
-        "📥 Video linki yuboring\n"
-        "🎵 Musiqa nomini yozing\n\n"
+        "🎬 Video Downloader Bot\n\n"
+        "📥 Video linkini yuboring\n\n"
+        "Qo'llab-quvvatlanadi: YouTube, Instagram, TikTok, Facebook va boshqalar\n\n"
         "👥 Foydalanuvchilar: " + str(len(users))
     )
 
@@ -75,22 +61,14 @@ def handler(message):
         try:
             file, title = download_video(text)
             with open(file, "rb") as v:
-                bot.send_video(message.chat.id, v, caption="🎬 " + title)
+                bot.send_video(message.chat.id, v, caption="🎬 " + title, supports_streaming=True)
             os.remove(file)
             bot.delete_message(message.chat.id, msg.message_id)
         except Exception as e:
             bot.reply_to(message, "❌ Xato: " + str(e))
     else:
-        msg = bot.reply_to(message, "🔎 Musiqa qidirilmoqda...")
-        try:
-            file, title = search_music(text)
-            with open(file, "rb") as a:
-                bot.send_audio(message.chat.id, a, title=title, caption="🎵 " + title)
-            os.remove(file)
-            bot.delete_message(message.chat.id, msg.message_id)
-        except Exception as e:
-            bot.reply_to(message, "❌ Xato: " + str(e))
+        bot.reply_to(message, "❌ Iltimos, video link yuboring!\n\nMasalan: https://youtube.com/watch?v=...")
 
 Thread(target=run_server, daemon=True).start()
-print("Bot ishlayapti...")
+print("Bot ishlayapti - faqat video yuklaydi...")
 bot.infinity_polling(skip_pending=True)
