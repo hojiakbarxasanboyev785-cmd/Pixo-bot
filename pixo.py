@@ -3,7 +3,7 @@ import yt_dlp
 import os
 import time
 
-TOKEN = "8624963114:AAFInEgTp0PTEQ9D1PJcMprcCtooPmxamlo"
+TOKEN = "8624963114:AAGhw4Ts5ZMkyJK-8YRlxCvVg8xGLFFBDsE"
 bot = telebot.TeleBot(TOKEN)
 
 bot.remove_webhook()
