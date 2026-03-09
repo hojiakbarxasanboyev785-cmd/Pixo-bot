@@ -2,14 +2,20 @@ import telebot
 import yt_dlp
 import os
 
-TOKEN = "8624963114:AAGR01L6bgJdKGPYTnSHuH7Z65JgxzDCwj0"  # BotFather dan olingan token
+# =========================
+# Tokenni o'zingizdan oling (@BotFather)
+# =========================
+TOKEN = "8624963114:AAGR01L6bgJdKGPYTnSHuH7Z65JgxzDCwj0"  
 bot = telebot.TeleBot(TOKEN)
 
+# Download papkasi
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
-users = set()  # foydalanuvchilarni saqlash
+# Foydalanuvchilarni saqlash
+users = set()
 
+# yt-dlp sozlamalari
 ydl_opts = {
     "format": "best",
     "outtmpl": f"{DOWNLOAD_FOLDER}/%(title)s.%(ext)s",
@@ -17,7 +23,9 @@ ydl_opts = {
     "quiet": True,
 }
 
-
+# =========================
+# Video yuklash funksiyasi
+# =========================
 def download_video(url):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
@@ -25,7 +33,9 @@ def download_video(url):
         title = info.get("title", "Video")
     return filename, title
 
-
+# =========================
+# Faylni tozalash funksiyasi
+# =========================
 def safe_remove(path):
     try:
         if path and os.path.exists(path):
@@ -33,17 +43,21 @@ def safe_remove(path):
     except:
         pass
 
-
+# =========================
+# /start handler
+# =========================
 @bot.message_handler(commands=["start"])
 def start(message):
-    users.add(message.from_user.id)  # foydalanuvchini qo‘shish
+    users.add(message.from_user.id)
     bot.send_message(
         message.chat.id,
         f"Salom, men Pixo video yuklovchi botman!\n"
         f"Foydalanuvchilar soni: {len(users)}"
     )
 
-
+# =========================
+# Video yuklash handler
+# =========================
 @bot.message_handler(func=lambda m: True)
 def handler(message):
     url = message.text.strip()
@@ -61,18 +75,4 @@ def handler(message):
                 caption=title,
                 supports_streaming=True
             )
-        bot.delete_message(message.chat.id, msg.message_id)
-
-    except Exception as e:
-        bot.edit_message_text(
-            f"❌ Xato:\n{e}",
-            message.chat.id,
-            msg.message_id
-        )
-
-    finally:
-        safe_remove(file_path)
-
-
-print("🚀 Pixo video bot ishga tushdi")
-bot.infinity_polling(skip_pending=True)
+        bot.delete_message(message.chat
