@@ -55,7 +55,8 @@ def start(message):
     users.add(message.from_user.id)
     bot.send_message(
         message.chat.id,
-        f"Salom, men Pixo video yuklovchi botman!\n"
+        f"Salom 🙂, men Pixo video yuklovchi botman!\n"
+        
         f"Foydalanuvchilar soni: {len(users)}"
     )
 
