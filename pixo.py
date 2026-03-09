@@ -15,13 +15,14 @@ if not os.path.exists(DOWNLOAD_FOLDER):
 
 users = set()
 
+# VIDEO YUKLASH
 def download_video(url):
     ydl_opts = {
-        'format': 'best',
+        'format': 'best[ext=mp4]/best',
         'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
         'noplaylist': True,
         'quiet': True,
-        'nocheckcertificate': True,
+        'nocheckcertificate': True
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -32,9 +33,108 @@ def download_video(url):
     return file, title
 
 
-def search_music(query):
+# MUSIQA QIDIRISH
+def download_music(query):
     ydl_opts = {
         'format': 'bestaudio/best',
+        'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
+        'quiet': True,
+        'noplaylist': True,
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }]
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(f"ytsearch1:{query}", download=True)['entries'][0]
+        title = info['title']
+        filename = f"{DOWNLOAD_FOLDER}/{title}.mp3"
+
+    return filename, title
+
+
+@bot.message_handler(commands=['start'])
+def start(message):
+
+    users.add(message.from_user.id)
+
+    bot.send_message(
+        message.chat.id,
+        f"""
+🤖 Universal Downloader Bot
+
+📥 Link yuboring:
+YouTube
+Instagram
+TikTok
+Facebook
+
+🎵 Musiqa nomini yozing — MP3 yuklaydi
+
+👥 Foydalanuvchilar: {len(users)}
+"""
+    )
+
+
+@bot.message_handler(func=lambda m: True)
+def handler(message):
+
+    users.add(message.from_user.id)
+    text = message.text
+
+    # VIDEO
+    if "http" in text:
+
+        msg = bot.reply_to(message, "⏳ Video yuklanmoqda...")
+
+        try:
+
+            file, title = download_video(text)
+
+            with open(file, "rb") as v:
+                bot.send_video(
+                    message.chat.id,
+                    v,
+                    caption=f"🎬 {title}",
+                    supports_streaming=True
+                )
+
+            os.remove(file)
+            bot.delete_message(message.chat.id, msg.message_id)
+
+        except Exception as e:
+
+            bot.reply_to(message, f"❌ Xato:\n{e}")
+
+    # MUSIQA
+    else:
+
+        msg = bot.reply_to(message, "🔎 Musiqa qidirilmoqda...")
+
+        try:
+
+            file, title = download_music(text)
+
+            with open(file, "rb") as a:
+                bot.send_audio(
+                    message.chat.id,
+                    a,
+                    title=title,
+                    caption=f"🎵 {title}"
+                )
+
+            os.remove(file)
+            bot.delete_message(message.chat.id, msg.message_id)
+
+        except Exception as e:
+
+            bot.reply_to(message, f"❌ Xato:\n{e}")
+
+
+print("✅ Bot ishga tushdi...")
+bot.infinity_polling(skip_pending=True)        'format': 'bestaudio/best',
         'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
         'quiet': True,
         'noplaylist': True,
