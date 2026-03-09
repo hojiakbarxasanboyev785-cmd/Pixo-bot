@@ -1,13 +1,15 @@
-import telebot
-import yt_dlp
 import os
 import re
 import json
 import threading
 import logging
 from datetime import datetime
+from urllib.parse import urlparse, parse_qs
+
+import yt_dlp
+import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-from flask import Flask
+from flask import Flask, jsonify
 
 # =========================
 # Logging
@@ -30,7 +32,6 @@ os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 os.makedirs(DATA_FOLDER, exist_ok=True)
 
 USERS_FILE = f"{DATA_FOLDER}/users.json"
-STATS_FILE = f"{DATA_FOLDER}/stats.json"
 
 # =========================
 # JSON helpers
@@ -40,8 +41,8 @@ def load_json(path, default):
         if os.path.exists(path):
             with open(path, "r", encoding="utf-8") as f:
                 return json.load(f)
-    except:
-        pass
+    except Exception as e:
+        logger.error(f"JSON load error: {e}")
     return default
 
 def save_json(path, data):
@@ -49,17 +50,13 @@ def save_json(path, data):
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        logger.error(f"JSON saqlashda xato: {e}")
+        logger.error(f"JSON save error: {e}")
 
 # =========================
-# Ma'lumotlar yuklash
+# Foydalanuvchi bazasi
 # =========================
 users_db = load_json(USERS_FILE, {})
-stats_db = load_json(STATS_FILE, {"total_downloads": 0, "videos": 0, "audios": 0, "searches": 0})
 
-# =========================
-# Foydalanuvchi saqlash
-# =========================
 def register_user(message):
     uid = str(message.from_user.id)
     if uid not in users_db:
@@ -75,33 +72,26 @@ def register_user(message):
         users_db[uid]["first_name"] = message.from_user.first_name
     save_json(USERS_FILE, users_db)
 
-def update_stats(type_):
-    if type_ == "video":
-        stats_db["videos"] += 1
-        stats_db["total_downloads"] += 1
-    elif type_ == "audio":
-        stats_db["audios"] += 1
-        stats_db["total_downloads"] += 1
-    elif type_ == "search":
-        stats_db["searches"] += 1
-    save_json(STATS_FILE, stats_db)
-
 # =========================
 # URL aniqlash
 # =========================
 URL_PATTERN = re.compile(
-    r'(https?://)?(www\.)?(youtube\.com|youtu\.be|instagram\.com|tiktok\.com|'
-    r'vm\.tiktok\.com|facebook\.com|fb\.watch|twitter\.com|x\.com|'
-    r'vimeo\.com|dailymotion\.com|soundcloud\.com|pinterest\.com|'
-    r'reddit\.com|twitch\.tv|ok\.ru|vk\.com)[\S]+'
+    r'(https?://)?(www\.)?(youtube\.com|youtu\.be|instagram\.com|tiktok\.com|vm\.tiktok\.com)[\S]+'
 )
 
 def is_url(text):
     return bool(URL_PATTERN.search(text.strip()))
 
 def extract_video_id(url):
-    match = re.search(r'(?:v=|youtu\.be/|/video/)([a-zA-Z0-9_-]{11})', url)
-    return match.group(1) if match else None
+    parsed = urlparse(url)
+    if "youtu.be" in parsed.netloc:
+        return parsed.path[1:]
+    elif "youtube.com" in parsed.netloc:
+        if "/shorts/" in parsed.path:
+            return parsed.path.split("/shorts/")[1]
+        qs = parse_qs(parsed.query)
+        return qs.get("v", [None])[0]
+    return None
 
 # =========================
 # Video yuklash
@@ -114,7 +104,7 @@ def download_video(url):
         "quiet": True,
         "merge_output_format": "mp4",
         "concurrent_fragment_downloads": 10,
-        "http_headers": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"},
+        "http_headers": {"User-Agent": "Mozilla/5.0"},
         "socket_timeout": 30,
     }
     with yt_dlp.YoutubeDL(opts) as ydl:
@@ -144,21 +134,21 @@ def download_audio(url):
     }
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        base = ydl.prepare_filename(info)
-        filename = base.rsplit(".", 1)[0] + ".mp3"
+        filename = ydl.prepare_filename(info).rsplit(".", 1)[0] + ".mp3"
         title = info.get("title", "Audio")
-        artist = info.get("artist") or info.get("uploader", "")
+        artist = info.get("uploader", "")
     return filename, title, artist
 
 # =========================
-# Qo'shiq qidirish
+# Qo‘shiq qidirish
 # =========================
 def search_songs(query, max_results=5):
     opts = {
         "quiet": True,
         "noplaylist": True,
         "extract_flat": True,
-        "default_search": f"ytsearch{max_results}",
+        "default_search": f"ytsearch{max_results}:youtube",
+        "force_generic_extractor": True,
         "socket_timeout": 20,
     }
     with yt_dlp.YoutubeDL(opts) as ydl:
@@ -175,7 +165,7 @@ def search_songs(query, max_results=5):
     return results
 
 # =========================
-# Fayl tozalash
+# Faylni tozalash
 # =========================
 def safe_remove(path):
     try:
@@ -199,27 +189,19 @@ def start(message):
     uid = message.from_user.id
     text = (
         "🎵 *Salom! Men Pixo Botman!*\n\n"
-        "📥 *Nima qila olaman?*\n"
-        "• YouTube, Instagram, TikTok, Facebook va boshqalardan video\n"
-        "• Videodagi musiqani MP3 formatda\n"
-        "• Qo'shiq nomini yozsangiz — topib beraman\n\n"
-        "🚀 *Foydalanish:*\n"
-        "1️⃣ Video havolasini yuboring\n"
-        "2️⃣ Qo'shiq nomini yozing\n\n"
-        f"👥 Foydalanuvchilar: *{len(users_db)}*\n"
-        f"⬇️ Yuklanmalar: *{stats_db['total_downloads']}*"
+        "📥 Video URL yuboring yoki qo'shiq nomini yozing.\n"
+        f"👥 Foydalanuvchilar: *{len(users_db)}*"
     )
     bot.send_message(uid, text, parse_mode="Markdown")
 
 # =========================
-# Callback handler
+# Callback handler (audio yuklash)
 # =========================
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
     uid = call.from_user.id
     data = call.data
     file_path = None
-
     if data.startswith("dl_audio:"):
         video_id = data.split(":", 1)[1]
         url = f"https://www.youtube.com/watch?v={video_id}"
@@ -231,11 +213,10 @@ def callback_handler(call):
                 bot.send_audio(
                     call.message.chat.id, f,
                     title=title, performer=artist,
-                    caption=f"🎵 *{title}*\n👤 {artist or 'Unknown'}\n\n📤 *Pixo Bot*",
+                    caption=f"🎵 *{title}*\n👤 {artist or 'Unknown'}",
                     parse_mode="Markdown"
                 )
             bot.delete_message(call.message.chat.id, msg.message_id)
-            update_stats("audio")
             uid_str = str(uid)
             users_db[uid_str]["downloads"] = users_db[uid_str].get("downloads", 0) + 1
             save_json(USERS_FILE, users_db)
@@ -256,28 +237,27 @@ def handle_video_url(message, url):
         markup = InlineKeyboardMarkup()
         vid_id = extract_video_id(url)
         if vid_id:
-            markup.add(InlineKeyboardButton("🎵 Qo'shiqni yuklab olish", callback_data=f"dl_audio:{vid_id}"))
+            markup.add(InlineKeyboardButton("🎵 Audio yuklab olish", callback_data=f"dl_audio:{vid_id}"))
         with open(file_path, "rb") as video:
             bot.send_video(
                 message.chat.id, video,
-                caption=f"🎬 *{title}*\n\n📤 *Pixo Bot*",
+                caption=f"🎬 *{title}*",
                 supports_streaming=True,
                 reply_markup=markup if vid_id else None,
                 parse_mode="Markdown"
             )
         bot.delete_message(message.chat.id, msg.message_id)
-        update_stats("video")
         uid_str = str(uid)
         users_db[uid_str]["downloads"] = users_db[uid_str].get("downloads", 0) + 1
         save_json(USERS_FILE, users_db)
     except Exception as e:
-        logger.error(f"Video yuklashda xato: {e}")
+        logger.error(f"Video yuklash xato: {e}")
         bot.edit_message_text(f"❌ Xato: {str(e)[:200]}", message.chat.id, msg.message_id)
     finally:
         safe_remove(file_path)
 
 # =========================
-# Qo'shiq qidirish handler
+# Qo‘shiq qidirish handler
 # =========================
 def handle_song_search(message, query):
     uid = message.from_user.id
@@ -292,11 +272,9 @@ def handle_song_search(message, query):
         for i, r in enumerate(results, 1):
             dur = format_duration(r["duration"])
             text += f"{i}. *{r['title'][:45]}* — {dur}\n"
-            btn = f"{i}. {r['title'][:35]} {dur}"
-            markup.add(InlineKeyboardButton(f"🎵 {btn}", callback_data=f"dl_audio:{r['id']}"))
+            markup.add(InlineKeyboardButton(f"🎵 {r['title'][:35]} {dur}", callback_data=f"dl_audio:{r['id']}"))
         bot.edit_message_text(text, message.chat.id, msg.message_id,
                               parse_mode="Markdown", reply_markup=markup)
-        update_stats("search")
     except Exception as e:
         logger.error(f"Qidirishda xato: {e}")
         bot.edit_message_text(f"❌ Xato: {str(e)[:200]}", message.chat.id, msg.message_id)
@@ -322,17 +300,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return f"🚀 Pixo Bot ishlayapti! | Foydalanuvchilar: {len(users_db)} | Yuklanmalar: {stats_db['total_downloads']}"
-
-@app.route("/stats")
-def web_stats():
-    return json.dumps({
-        "users": len(users_db),
-        "total_downloads": stats_db["total_downloads"],
-        "videos": stats_db["videos"],
-        "audios": stats_db["audios"],
-        "searches": stats_db["searches"]
-    }, ensure_ascii=False)
+    return f"🚀 Pixo Bot ishlayapti! | Foydalanuvchilar: {len(users_db)}"
 
 # =========================
 # Bot thread
@@ -345,7 +313,7 @@ bot_thread = threading.Thread(target=run_bot, daemon=True)
 bot_thread.start()
 
 # =========================
-# Flask
+# Flask run
 # =========================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
