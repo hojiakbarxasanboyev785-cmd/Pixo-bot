@@ -1,6 +1,2 @@
 pyTelegramBotAPI
 yt-dlp
-SpeechRecognition
-pydub
-ffmpeg-python
-requests
