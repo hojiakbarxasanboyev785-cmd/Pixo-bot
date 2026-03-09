@@ -19,22 +19,27 @@ os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 # Foydalanuvchilar
 users = set()
 
-# yt-dlp sozlamalari
+# yt-dlp sozlamalari faqat Instagram uchun
 ydl_opts = {
     "format": "best",
     "outtmpl": f"{DOWNLOAD_FOLDER}/%(title)s.%(ext)s",
     "noplaylist": True,
     "quiet": True,
+    "ignoreerrors": True,
+    "geo_bypass": True,
+    "restrictfilenames": True
 }
 
 # =========================
 # Video yuklash funksiyasi
 # =========================
-def download_video(url):
+def download_instagram_video(url):
+    if "instagram.com" not in url:
+        raise ValueError("❌ Iltimos, faqat Instagram video linkini yuboring!")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
         filename = ydl.prepare_filename(info)
-        title = info.get("title", "Video")
+        title = info.get("title", "Instagram Video")
     return filename, title
 
 # =========================
@@ -54,10 +59,10 @@ def safe_remove(path):
 def start(message):
     users.add(message.from_user.id)
     start_text = (
-        "✨ *Salom, men Pixo Video Botman!* ✨\n\n"
-        "🎬 Men Instagram videolarini yuklab bera olaman.\n"
+        "✨ *Salom, men Pixo Instagram Video Botman!* ✨\n\n"
+        "🎬 Men faqat Instagram videolarini yuklab bera olaman.\n"
         "📊 Foydalanuvchilar soni: *{users_count}*\n\n"
-        "⬇️ Video linkini shu yerga yuboring va men uni yuklab beraman!"
+        "⬇️ Instagram video linkini shu yerga yuboring!"
     ).format(users_count=len(users))
 
     bot.send_message(
@@ -77,7 +82,7 @@ def handler(message):
     msg = bot.reply_to(message, "⏳ Video yuklanmoqda... Iltimos kuting! 🎬")
     file_path = None
     try:
-        file_path, title = download_video(url)
+        file_path, title = download_instagram_video(url)
         with open(file_path, "rb") as video:
             bot.send_video(
                 message.chat.id,
@@ -107,7 +112,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return "🚀 Pixo Video Bot ishlayapti!"
+    return "🚀 Pixo Instagram Video Bot ishlayapti!"
 
 # =========================
 # Flask server ishga tushishi
