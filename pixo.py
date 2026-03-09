@@ -1,6 +1,7 @@
 import telebot
 import yt_dlp
 import os
+import time
 import speech_recognition as sr
 
 TOKEN = "8624963114:AAGPOPam4nKPK2Y7sVQTH7KkNY_OHPVVNzw"
@@ -125,4 +126,9 @@ def text_handler(message):
             safe_remove(file_path)
 
 print("🚀 Bot ishga tushdi...")
-bot.infinity_polling(skip_pending=True)
+while True:
+    try:
+        bot.infinity_polling(skip_pending=True, timeout=60, long_polling_timeout=60)
+    except Exception as e:
+        print(f"Xato: {e}")
+        time.sleep(5)
