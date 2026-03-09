@@ -3,7 +3,7 @@ import yt_dlp
 import os
 import time
 
-TOKEN = "8624963114:AAGhw4Ts5ZMkyJK-8YRlxCvVg8xGLFFBDsE"
+TOKEN = "8624963114:AAEyVTmF8VKu5WXQrITAWecB97shsWLIGe8"
 bot = telebot.TeleBot(TOKEN)
 
 bot.remove_webhook()
@@ -17,24 +17,106 @@ users = set()
 
 def download_video(url):
     ydl_opts = {
-        'format': 'best[ext=mp4]/best',
+        'format': 'best',
         'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
         'noplaylist': True,
         'quiet': True,
         'nocheckcertificate': True,
     }
+
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
         file = ydl.prepare_filename(info)
         title = info.get("title", "Video")
+
     return file, title
+
 
 def search_music(query):
     ydl_opts = {
-        'format': 'bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio',
+        'format': 'bestaudio/best',
         'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
         'quiet': True,
-        'nocheckcertificate': True,
+        'noplaylist': True,
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(f"ytsearch:{query}", download=True)['entries'][0]
+        file = ydl.prepare_filename(info)
+        title = info['title']
+
+    return file, title
+
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    users.add(message.from_user.id)
+
+    bot.send_message(
+        message.chat.id,
+        f"""🤖 Universal Downloader Bot
+
+📥 Video link yuboring:
+YouTube
+Instagram
+TikTok
+Facebook
+
+🎵 Musiqa nomini yozing — YouTube dan topadi
+
+👥 Foydalanuvchilar: {len(users)}
+"""
+    )
+
+
+@bot.message_handler(func=lambda m: True)
+def handler(message):
+    users.add(message.from_user.id)
+    text = message.text
+
+    if "http" in text:
+        msg = bot.reply_to(message, "⏳ Video yuklanmoqda...")
+
+        try:
+            file, title = download_video(text)
+
+            with open(file, "rb") as v:
+                bot.send_video(
+                    message.chat.id,
+                    v,
+                    caption=f"🎬 {title}",
+                    supports_streaming=True
+                )
+
+            os.remove(file)
+            bot.delete_message(message.chat.id, msg.message_id)
+
+        except Exception as e:
+            bot.reply_to(message, f"❌ Xato:\n{e}")
+
+    else:
+        msg = bot.reply_to(message, "🔎 Musiqa qidirilmoqda...")
+
+        try:
+            file, title = search_music(text)
+
+            with open(file, "rb") as a:
+                bot.send_audio(
+                    message.chat.id,
+                    a,
+                    title=title,
+                    caption=f"🎵 {title}"
+                )
+
+            os.remove(file)
+            bot.delete_message(message.chat.id, msg.message_id)
+
+        except Exception as e:
+            bot.reply_to(message, f"❌ Xato:\n{e}")
+
+
+print("✅ Bot ishga tushdi...")
+bot.infinity_polling(skip_pending=True)        'nocheckcertificate': True,
         'noplaylist': True,
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
