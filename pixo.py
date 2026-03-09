@@ -5,7 +5,7 @@ import os
 # =========================
 # Tokenni o'zingizdan oling (@BotFather)
 # =========================
-TOKEN = "8624963114:AAGR01L6bgJdKGPYTnSHuH7Z65JgxzDCwj0"  
+TOKEN = "8624963114:AAH6Hg2rV6WIpPYzCvy4zpvBizWR03uKaWg"  
 bot = telebot.TeleBot(TOKEN)
 
 # Download papkasi
