@@ -1,8 +1,3 @@
-Flask
 pyTelegramBotAPI
 yt-dlp
-requests
-mutagen
-pycryptodomex
-websockets
-brotli
+Flask
