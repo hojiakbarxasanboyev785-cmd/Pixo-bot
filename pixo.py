@@ -125,6 +125,27 @@ def text_handler(message):
             safe_remove(file_path)
 
 print("🚀 Bot ishga tushdi...")
+bot.infinity_polling(skip_pending=True)            file_path, title = download_video(text)
+            with open(file_path, "rb") as v:
+                bot.send_video(message.chat.id, v, caption=f"🎬 {title}", supports_streaming=True)
+            bot.delete_message(message.chat.id, msg.message_id)
+        except Exception as e:
+            bot.edit_message_text(f"❌ Xato:\n{e}", message.chat.id, msg.message_id)
+        finally:
+            safe_remove(file_path)
+    else:
+        msg = bot.reply_to(message, "🔎 Musiqa qidirilmoqda...")
+        try:
+            file_path, title = download_music(text)
+            with open(file_path, "rb") as a:
+                bot.send_audio(message.chat.id, a, title=title, caption=f"🎵 {title}")
+            bot.delete_message(message.chat.id, msg.message_id)
+        except Exception as e:
+            bot.edit_message_text(f"❌ Xato:\n{e}", message.chat.id, msg.message_id)
+        finally:
+            safe_remove(file_path)
+
+print("🚀 Bot ishga tushdi...")
 bot.infinity_polling(skip_pending=True)import telebot
 import yt_dlp
 import os
