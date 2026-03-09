@@ -1,4 +1,3 @@
+Flask
 pyTelegramBotAPI
 yt-dlp
-requests
-browser-cookie3
