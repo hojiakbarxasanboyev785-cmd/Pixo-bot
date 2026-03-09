@@ -11,6 +11,11 @@ TOKEN = "8624963114:AAEvM6LxOwGYE346bOu7gvBgj8f6lZOmjBU"
 bot = telebot.TeleBot(TOKEN)
 
 # =========================
+# Webhook bo‘lsa uni tozalaymiz
+# =========================
+bot.remove_webhook()  # Bu qator 409 xatolikni oldini oladi
+
+# =========================
 # Download papkasi
 # =========================
 DOWNLOAD_FOLDER = "downloads"
@@ -98,6 +103,7 @@ def run_bot():
     bot.infinity_polling(skip_pending=True)
 
 bot_thread = threading.Thread(target=run_bot)
+bot_thread.daemon = True  # Serverni to‘xtatganda bot ham to‘xtaydi
 bot_thread.start()
 
 # =========================
