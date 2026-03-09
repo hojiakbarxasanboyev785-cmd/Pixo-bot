@@ -1,123 +1,128 @@
 import telebot
-import yt_dlp
+import requests
+from bs4 import BeautifulSoup
 import os
 from flask import Flask
 import threading
 
 # =========================
-# Bot token
+# BOT TOKEN
 # =========================
 TOKEN = "8624963114:AAEvM6LxOwGYE346bOu7gvBgj8f6lZOmjBU"
 bot = telebot.TeleBot(TOKEN)
 
 # =========================
-# Webhook bo‘lsa uni tozalaymiz
-# =========================
-bot.remove_webhook()  # Bu qator 409 xatolikni oldini oladi
-
-# =========================
-# Download papkasi
+# Papka
 # =========================
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
-# Foydalanuvchilar
 users = set()
 
-# yt-dlp sozlamalari
-ydl_opts = {
-    "format": "best",
-    "outtmpl": f"{DOWNLOAD_FOLDER}/%(title)s.%(ext)s",
-    "noplaylist": True,
-    "quiet": True,
-}
+# =========================
+# Instagram video olish
+# =========================
+def download_instagram_video(url):
+
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    r = requests.get(url, headers=headers)
+    soup = BeautifulSoup(r.text, "html.parser")
+
+    video_tag = soup.find("meta", property="og:video")
+
+    if not video_tag:
+        raise Exception("Instagram videoni topa olmadim")
+
+    video_url = video_tag["content"]
+
+    video_data = requests.get(video_url).content
+
+    file_path = f"{DOWNLOAD_FOLDER}/video.mp4"
+
+    with open(file_path, "wb") as f:
+        f.write(video_data)
+
+    return file_path
+
 
 # =========================
-# Video yuklash funksiyasi
+# START
 # =========================
-def download_video(url):
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info)
-        title = info.get("title", "Video")
-    return filename, title
-
-# =========================
-# Faylni tozalash
-# =========================
-def safe_remove(path):
-    try:
-        if path and os.path.exists(path):
-            os.remove(path)
-    except:
-        pass
-
-# =========================
-# /start handler
-# =========================
-@bot.message_handler(commands=["start"])
+@bot.message_handler(commands=['start'])
 def start(message):
-    users.add(message.from_user.id)
-    start_text = (
-        "✨ *Salom, men Pixo Video Botman!* ✨\n\n"
-        "🎬 Men Instagram videolarini yuklab bera olaman.\n"
-        "📊 Foydalanuvchilar soni: *{users_count}*\n\n"
-        "⬇️ Video linkini shu yerga yuboring va men uni yuklab beraman!"
-    ).format(users_count=len(users))
 
-    bot.send_message(
-        message.chat.id,
-        start_text,
-        parse_mode="Markdown"
-    )
+    users.add(message.from_user.id)
+
+    text = f"""
+✨ Salom!
+
+📥 Instagram video yuklovchi bot.
+
+👥 Foydalanuvchilar: {len(users)}
+
+📎 Instagram video linkini yuboring.
+"""
+
+    bot.send_message(message.chat.id, text)
+
 
 # =========================
-# Video link handler
+# LINK HANDLER
 # =========================
 @bot.message_handler(func=lambda m: True)
 def handler(message):
-    url = message.text.strip()
-    users.add(message.from_user.id)
 
-    msg = bot.reply_to(message, "⏳ Video yuklanmoqda... Iltimos kuting! 🎬")
+    url = message.text.strip()
+
+    if "instagram.com" not in url:
+        bot.reply_to(message,"❌ Faqat Instagram link yuboring")
+        return
+
+    msg = bot.reply_to(message,"⏳ Video yuklanmoqda...")
+
     file_path = None
+
     try:
-        file_path, title = download_video(url)
-        with open(file_path, "rb") as video:
-            bot.send_video(
-                message.chat.id,
-                video,
-                caption=f"🎬 Video nomi: {title}\n📤 Yukladi: Pixo Bot",
-                supports_streaming=True
-            )
-        bot.delete_message(message.chat.id, msg.message_id)
+
+        file_path = download_instagram_video(url)
+
+        with open(file_path,"rb") as video:
+            bot.send_video(message.chat.id, video)
+
+        bot.delete_message(message.chat.id,msg.message_id)
+
     except Exception as e:
-        bot.edit_message_text(f"❌ Xato yuz berdi:\n{e}", message.chat.id, msg.message_id)
-    finally:
-        safe_remove(file_path)
+
+        bot.edit_message_text(
+            f"❌ Xato:\n{e}",
+            message.chat.id,
+            msg.message_id
+        )
+
+    if file_path and os.path.exists(file_path):
+        os.remove(file_path)
+
 
 # =========================
-# Telegram botni thread-da ishga tushirish
+# BOT THREAD
 # =========================
 def run_bot():
-    bot.infinity_polling(skip_pending=True)
+    bot.infinity_polling()
 
-bot_thread = threading.Thread(target=run_bot)
-bot_thread.daemon = True  # Serverni to‘xtatganda bot ham to‘xtaydi
-bot_thread.start()
+threading.Thread(target=run_bot).start()
 
 # =========================
-# Flask Web Service
+# WEB SERVER
 # =========================
 app = Flask(__name__)
 
-@app.route("/")
-def index():
-    return "🚀 Pixo Video Bot ishlayapti!"
+@app.route('/')
+def home():
+    return "Bot ishlayapti"
 
-# =========================
-# Flask server ishga tushishi
-# =========================
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT",5000))
+    app.run(host="0.0.0.0",port=port)
