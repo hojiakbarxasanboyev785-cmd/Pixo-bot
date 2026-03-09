@@ -1,2 +1,3 @@
-pyTelegramBotAPI
-yt-dlp
+pip install pyTelegramBotAPI
+pip install yt-dlp
+pip install ffmpeg-python
