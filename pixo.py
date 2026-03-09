@@ -7,7 +7,7 @@ import threading
 # =========================
 # Bot token
 # =========================
-TOKEN = "8624963114:AAH-DbsJ4jK-BB8xNTAy0o8e3mLdU7ZBIIk"
+TOKEN = "8624963114:AAEvM6LxOwGYE346bOu7gvBgj8f6lZOmjBU"
 bot = telebot.TeleBot(TOKEN)
 
 # =========================
