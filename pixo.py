@@ -82,7 +82,7 @@ def start(message):
     
     bot.send_message(
         message.chat.id,
-        f"👋 Salom {user_name}!\n\n"
+        f"👋 Salom, {user_name} Men Pixo botman!\n\n"
         f"📥 Menga quyidagi platformalardan video link yuboring:\n"
         f"• YouTube\n"
         f"• Instagram\n"
