@@ -1,18 +1,22 @@
 import telebot
 import yt_dlp
 import os
+from flask import Flask, request
+import threading
 
 # =========================
-# Tokenni o'zingizdan oling (@BotFather)
+# Bot token
 # =========================
 TOKEN = "8624963114:AAH6Hg2rV6WIpPYzCvy4zpvBizWR03uKaWg"  
 bot = telebot.TeleBot(TOKEN)
 
+# =========================
 # Download papkasi
+# =========================
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
-# Foydalanuvchilarni saqlash
+# Foydalanuvchilar
 users = set()
 
 # yt-dlp sozlamalari
@@ -24,7 +28,7 @@ ydl_opts = {
 }
 
 # =========================
-# Video yuklash funksiyasi
+# Video yuklash
 # =========================
 def download_video(url):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -33,9 +37,6 @@ def download_video(url):
         title = info.get("title", "Video")
     return filename, title
 
-# =========================
-# Faylni tozalash funksiyasi
-# =========================
 def safe_remove(path):
     try:
         if path and os.path.exists(path):
@@ -56,7 +57,7 @@ def start(message):
     )
 
 # =========================
-# Video yuklash handler
+# Video link handler
 # =========================
 @bot.message_handler(func=lambda m: True)
 def handler(message):
@@ -65,7 +66,6 @@ def handler(message):
 
     msg = bot.reply_to(message, "⏳ Video yuklanmoqda...")
     file_path = None
-
     try:
         file_path, title = download_video(url)
         with open(file_path, "rb") as video:
@@ -75,4 +75,34 @@ def handler(message):
                 caption=title,
                 supports_streaming=True
             )
-        bot.delete_message(message.chat
+        bot.delete_message(message.chat.id, msg.message_id)
+    except Exception as e:
+        bot.edit_message_text(f"❌ Xato:\n{e}", message.chat.id, msg.message_id)
+    finally:
+        safe_remove(file_path)
+
+# =========================
+# Telegram botni thread-da ishga tushirish
+# =========================
+def run_bot():
+    bot.infinity_polling(skip_pending=True)
+
+bot_thread = threading.Thread(target=run_bot)
+bot_thread.start()
+
+# =========================
+# Flask web server
+# =========================
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    return "🚀 Pixo Video Bot ishlayapti!"
+
+# =========================
+# Flask server ishga tushishi
+# =========================
+if __name__ == "__main__":
+    # Port Render avtomatik belgilaydi
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
