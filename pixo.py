@@ -2,6 +2,7 @@ import telebot
 import yt_dlp
 import os
 import time
+import speech_recognition as sr
 
 TOKEN = "8624963114:AAEyVTmF8VKu5WXQrITAWecB97shsWLIGe8"
 bot = telebot.TeleBot(TOKEN)
@@ -21,8 +22,7 @@ def download_video(url):
         'format': 'best[ext=mp4]/best',
         'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
         'noplaylist': True,
-        'quiet': True,
-        'nocheckcertificate': True
+        'quiet': True
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -33,8 +33,135 @@ def download_video(url):
     return file, title
 
 
-# MUSIQA QIDIRISH
+# MUSIQA YUKLASH
 def download_music(query):
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
+        'quiet': True,
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192'
+        }]
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(f"ytsearch1:{query}", download=True)['entries'][0]
+        title = info['title']
+        file = f"{DOWNLOAD_FOLDER}/{title}.mp3"
+
+    return file, title
+
+
+# VOICE → TEXT
+def voice_to_text(file_path):
+
+    r = sr.Recognizer()
+
+    with sr.AudioFile(file_path) as source:
+        audio = r.record(source)
+
+    text = r.recognize_google(audio)
+    return text
+
+
+@bot.message_handler(commands=['start'])
+def start(message):
+
+    users.add(message.from_user.id)
+
+    bot.send_message(
+        message.chat.id,
+        f"""
+🤖 AI Music & Video Bot
+
+🎤 Mikrofon bilan musiqa nomini ayting
+🎵 Bot musiqani topadi
+
+📥 Link yuboring:
+YouTube
+Instagram
+TikTok
+
+👥 Users: {len(users)}
+"""
+    )
+
+
+# VOICE MESSAGE
+@bot.message_handler(content_types=['voice'])
+def voice_handler(message):
+
+    msg = bot.reply_to(message, "🎤 Ovozni aniqlayapman...")
+
+    file_info = bot.get_file(message.voice.file_id)
+    downloaded_file = bot.download_file(file_info.file_path)
+
+    voice_path = f"{DOWNLOAD_FOLDER}/voice.ogg"
+
+    with open(voice_path, 'wb') as f:
+        f.write(downloaded_file)
+
+    try:
+
+        text = voice_to_text(voice_path)
+
+        bot.send_message(message.chat.id, f"🔎 Qidiruv: {text}")
+
+        file, title = download_music(text)
+
+        with open(file, "rb") as a:
+            bot.send_audio(message.chat.id, a, title=title)
+
+        os.remove(file)
+        os.remove(voice_path)
+
+    except Exception as e:
+        bot.reply_to(message, f"❌ Xato: {e}")
+
+
+# TEXT MESSAGE
+@bot.message_handler(func=lambda m: True)
+def handler(message):
+
+    text = message.text
+
+    if "http" in text:
+
+        msg = bot.reply_to(message, "⏳ Video yuklanmoqda...")
+
+        try:
+
+            file, title = download_video(text)
+
+            with open(file, "rb") as v:
+                bot.send_video(message.chat.id, v, caption=title)
+
+            os.remove(file)
+
+        except Exception as e:
+            bot.reply_to(message, f"❌ Xato: {e}")
+
+    else:
+
+        msg = bot.reply_to(message, "🔎 Musiqa qidirilmoqda...")
+
+        try:
+
+            file, title = download_music(text)
+
+            with open(file, "rb") as a:
+                bot.send_audio(message.chat.id, a, title=title)
+
+            os.remove(file)
+
+        except Exception as e:
+            bot.reply_to(message, f"❌ Xato: {e}")
+
+
+print("🚀 Bot ishga tushdi")
+bot.infinity_polling(skip_pending=True)def download_music(query):
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
