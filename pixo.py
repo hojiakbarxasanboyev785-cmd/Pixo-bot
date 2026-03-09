@@ -53,11 +53,17 @@ def safe_remove(path):
 @bot.message_handler(commands=["start"])
 def start(message):
     users.add(message.from_user.id)
+    start_text = (
+        "✨ *Salom, men Pixo Video Botman!* ✨\n\n"
+        "🎬 Men Instagram videolarini yuklab bera olaman.\n"
+        "📊 Foydalanuvchilar soni: *{users_count}*\n\n"
+        "⬇️ Video linkini shu yerga yuboring va men uni yuklab beraman!"
+    ).format(users_count=len(users))
+
     bot.send_message(
         message.chat.id,
-        f"Salom 😆, men Pixo video yuklovchi botman! Video yuklayman (Instagram)\n"
-        
-        f"Foydalanuvchilar soni: {len(users)}"
+        start_text,
+        parse_mode="Markdown"
     )
 
 # =========================
@@ -68,7 +74,7 @@ def handler(message):
     url = message.text.strip()
     users.add(message.from_user.id)
 
-    msg = bot.reply_to(message, "⏳ Video yuklamoqdaman...")
+    msg = bot.reply_to(message, "⏳ Video yuklanmoqda... Iltimos kuting! 🎬")
     file_path = None
     try:
         file_path, title = download_video(url)
@@ -76,12 +82,12 @@ def handler(message):
             bot.send_video(
                 message.chat.id,
                 video,
-                caption=title,
+                caption=f"🎬 Video nomi: {title}\n📤 Yukladi: Pixo Bot",
                 supports_streaming=True
             )
         bot.delete_message(message.chat.id, msg.message_id)
     except Exception as e:
-        bot.edit_message_text(f"❌ Xato:\n{e}", message.chat.id, msg.message_id)
+        bot.edit_message_text(f"❌ Xato yuz berdi:\n{e}", message.chat.id, msg.message_id)
     finally:
         safe_remove(file_path)
 
