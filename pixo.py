@@ -36,8 +36,11 @@ ydl_opts = {
 def download_instagram_video(url):
     if "instagram.com" not in url:
         raise ValueError("❌ Iltimos, faqat Instagram video linkini yuboring!")
+
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
+        if info is None:
+            raise ValueError("❌ Video topilmadi yoki private hisob!")
         filename = ydl.prepare_filename(info)
         title = info.get("title", "Instagram Video")
     return filename, title
