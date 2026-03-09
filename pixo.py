@@ -83,7 +83,6 @@ def handler(message):
 
 print("Bot ishlayapti...")
 bot.infinity_polling(skip_pending=True)        "👥 Foydalanuvchilar: " + str(len(users))
-    )
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
