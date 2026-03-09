@@ -1,13 +1,13 @@
 import telebot
 import yt_dlp
 import os
-from flask import Flask, request
+from flask import Flask
 import threading
 
 # =========================
 # Bot token
 # =========================
-TOKEN = "8624963114:AAH6Hg2rV6WIpPYzCvy4zpvBizWR03uKaWg"  
+TOKEN = "8624963114:AAH-DbsJ4jK-BB8xNTAy0o8e3mLdU7ZBIIk"
 bot = telebot.TeleBot(TOKEN)
 
 # =========================
@@ -28,7 +28,7 @@ ydl_opts = {
 }
 
 # =========================
-# Video yuklash
+# Video yuklash funksiyasi
 # =========================
 def download_video(url):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -37,6 +37,9 @@ def download_video(url):
         title = info.get("title", "Video")
     return filename, title
 
+# =========================
+# Faylni tozalash
+# =========================
 def safe_remove(path):
     try:
         if path and os.path.exists(path):
@@ -91,7 +94,7 @@ bot_thread = threading.Thread(target=run_bot)
 bot_thread.start()
 
 # =========================
-# Flask web server
+# Flask Web Service
 # =========================
 app = Flask(__name__)
 
@@ -103,6 +106,5 @@ def index():
 # Flask server ishga tushishi
 # =========================
 if __name__ == "__main__":
-    # Port Render avtomatik belgilaydi
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
