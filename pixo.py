@@ -4,7 +4,7 @@ import os
 import time
 import speech_recognition as sr
 
-TOKEN = "8624963114:AAGPOPam4nKPK2Y7sVQTH7KkNY_OHPVVNzw"
+TOKEN = "8624963114:AAGR01L6bgJdKGPYTnSHuH7Z65JgxzDCwj0"
 bot = telebot.TeleBot(TOKEN)
 
 DOWNLOAD_FOLDER = "downloads"
