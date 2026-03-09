@@ -55,7 +55,7 @@ def start(message):
     users.add(message.from_user.id)
     bot.send_message(
         message.chat.id,
-        f"Salom 🙂, men Pixo video yuklovchi botman!\n"
+        f"Salom 😆, men Pixo video yuklovchi botman! Video yuklayman (Instagram)\n"
         
         f"Foydalanuvchilar soni: {len(users)}"
     )
@@ -68,7 +68,7 @@ def handler(message):
     url = message.text.strip()
     users.add(message.from_user.id)
 
-    msg = bot.reply_to(message, "⏳ Video yuklanmoqda...")
+    msg = bot.reply_to(message, "⏳ Video yuklamoqdaman...")
     file_path = None
     try:
         file_path, title = download_video(url)
