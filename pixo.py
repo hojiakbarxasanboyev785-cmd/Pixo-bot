@@ -3,7 +3,7 @@ import yt_dlp
 import os
 import speech_recognition as sr
 
-TOKEN = "8624963114:AAHbnDDhzIDZU23YBzFFpfYquMM_hG6H-Gk"
+TOKEN = "8624963114:AAGPOPam4nKPK2Y7sVQTH7KkNY_OHPVVNzw"
 bot = telebot.TeleBot(TOKEN)
 
 DOWNLOAD_FOLDER = "downloads"
