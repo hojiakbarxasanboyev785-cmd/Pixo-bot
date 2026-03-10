@@ -1,10 +1,11 @@
 import telebot
 import requests
 import os
-from flask import Flask
-import threading
+from flask import Flask, request
 
 TOKEN = os.environ.get("8624963114:AAF1wIyfnfoY7Qu-Ct6jl6hXJQzD6Au9vB0")
+RENDER_URL = os.environ.get("https://pixo-bot-1.onrender.com")  # sizning render URL ingiz
+
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 users = set()
@@ -84,14 +85,25 @@ def handler(message):
         if os.path.exists(file_path):
             os.remove(file_path)
 
-def run_bot():
-    bot.infinity_polling(skip_pending=True)
-
-threading.Thread(target=run_bot).start()
+# ==============================
+# Webhook
+# ==============================
+@app.route(f"/{TOKEN}", methods=["POST"])
+def webhook():
+    json_str = request.get_data().decode("UTF-8")
+    update = telebot.types.Update.de_json(json_str)
+    bot.process_new_updates([update])
+    return "OK", 200
 
 @app.route("/")
 def index():
     return "🚀 Pixo Bot ishlayapti!"
+
+@app.route("/set_webhook")
+def set_webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url=f"{RENDER_URL}/{TOKEN}")
+    return "✅ Webhook o'rnatildi!"
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
