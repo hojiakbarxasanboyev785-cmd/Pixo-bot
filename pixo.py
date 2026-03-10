@@ -1,5 +1,5 @@
 import telebot
-import instaloader
+import yt_dlp
 import os
 
 # =========================
@@ -15,20 +15,23 @@ DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 # =========================
-# INSTALOADER
+# YT-DLP SOZLAMALARI
 # =========================
-L = instaloader.Instaloader(
-    dirname_pattern=DOWNLOAD_FOLDER,
-    save_metadata=False,
-    download_comments=False
-)
+ydl_opts = {
+    "format": "bestvideo+bestaudio/best",
+    "outtmpl": f"{DOWNLOAD_FOLDER}/%(id)s.%(ext)s",
+    "noplaylist": True,
+    "quiet": True,
+    "cookiefile": "cookies.txt",   # agar cookies.txt bo‘lsa ishlatadi
+    "nocheckcertificate": True,
+    "geo_bypass": True
+}
 
 # =========================
 # START
 # =========================
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-
+@bot.message_handler(commands=["start"])
+def start(message):
     text = (
         "✨ *Assalomu alaykum!* ✨\n\n"
         "🤖 *Men Pixo Botman*\n"
@@ -37,70 +40,62 @@ def send_welcome(message):
         "1️⃣ Instagram Reel yoki Post linkini yuboring\n"
         "2️⃣ Men videoni yuklab olaman\n"
         "3️⃣ Sizga tayyor video yuboraman 🎬\n\n"
-        "🚀 Shunchaki Instagram link yuboring va sinab ko‘ring!"
+        "🚀 Instagram link yuboring!"
     )
-
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
 
 # =========================
-# VIDEO YUKLASH
+# VIDEO YUKLASH FUNKSIYA
+# =========================
+def download_video(url):
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        filename = ydl.prepare_filename(info)
+        title = info.get("title", "Instagram Video")
+    return filename, title
+
+# =========================
+# LINK QABUL QILISH
 # =========================
 @bot.message_handler(func=lambda m: True)
-def download_instagram_video(message):
+def handle_link(message):
 
     url = message.text.strip()
 
     if "instagram.com" not in url:
-        bot.reply_to(message, "❌ Bu Instagram linki emas.\n\nIltimos to‘g‘ri link yuboring.")
+        bot.reply_to(message, "❌ Faqat Instagram link yuboring.")
         return
 
     msg = bot.reply_to(message, "⏳ Video yuklanmoqda...")
 
+    file_path = None
+
     try:
-        shortcode = url.split("/")[-2]
+        file_path, title = download_video(url)
 
-        post = instaloader.Post.from_shortcode(L.context, shortcode)
-
-        if not post.is_video:
-            bot.edit_message_text(
-                "❌ Bu postda video yo‘q.",
+        with open(file_path, "rb") as video:
+            bot.send_video(
                 message.chat.id,
-                msg.message_id
+                video,
+                caption=f"🎬 {title}\n🤖 Pixo Bot",
+                supports_streaming=True
             )
-            return
-
-        # video yuklash
-        L.download_post(post, target=DOWNLOAD_FOLDER)
-
-        # mp4 faylni topish
-        for file in os.listdir(DOWNLOAD_FOLDER):
-
-            if file.endswith(".mp4"):
-
-                path = os.path.join(DOWNLOAD_FOLDER, file)
-
-                with open(path, "rb") as video:
-                    bot.send_video(
-                        message.chat.id,
-                        video,
-                        caption="🎬 Video yuklandi\n🤖 Pixo Bot"
-                    )
-
-                os.remove(path)
 
         bot.delete_message(message.chat.id, msg.message_id)
 
     except Exception as e:
-
         bot.edit_message_text(
             f"❌ Xatolik yuz berdi:\n{e}",
             message.chat.id,
             msg.message_id
         )
 
+    finally:
+        if file_path and os.path.exists(file_path):
+            os.remove(file_path)
+
 # =========================
-# BOT ISHGA TUSHISHI
+# BOT START
 # =========================
 print("Pixo bot ishga tushdi...")
-
-bot.polling(none_stop=True)
+bot.infinity_polling(skip_pending=True)
