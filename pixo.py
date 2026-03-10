@@ -1,51 +1,39 @@
 import telebot
 import yt_dlp
 import os
+from flask import Flask
+import threading
 
 # =========================
-# BOT TOKEN
+# Bot token
 # =========================
-BOT_TOKEN = "8624963114:AAF1wIyfnfoY7Qu-Ct6jl6hXJQzD6Au9vB0"
-bot = telebot.TeleBot(BOT_TOKEN)
+TOKEN = "8624963114:AAF1wIyfnfoY7Qu-Ct6jl6hXJQzD6Au9vB0"
+bot = telebot.TeleBot(TOKEN)
 
 # =========================
-# DOWNLOAD PAPKA
+# Download papkasi
 # =========================
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
+# Foydalanuvchilar
+users = set()
+
 # =========================
-# YT-DLP SOZLAMALARI
+# yt-dlp sozlamalari
 # =========================
 ydl_opts = {
     "format": "bestvideo+bestaudio/best",
     "outtmpl": f"{DOWNLOAD_FOLDER}/%(id)s.%(ext)s",
     "noplaylist": True,
     "quiet": True,
-    "cookiefile": "cookies.txt",   # agar cookies.txt bo‘lsa ishlatadi
     "nocheckcertificate": True,
-    "geo_bypass": True
+    "geo_bypass": True,
+    "cookiefile": "cookies.txt"  # agar cookies.txt bo'lsa ishlatadi
 }
 
 # =========================
-# START
-# =========================
-@bot.message_handler(commands=["start"])
-def start(message):
-    text = (
-        "✨ *Assalomu alaykum!* ✨\n\n"
-        "🤖 *Men Pixo Botman*\n"
-        "📥 Instagram videolarini tez va oson yuklab beraman.\n\n"
-        "📌 *Qanday ishlaydi?*\n"
-        "1️⃣ Instagram Reel yoki Post linkini yuboring\n"
-        "2️⃣ Men videoni yuklab olaman\n"
-        "3️⃣ Sizga tayyor video yuboraman 🎬\n\n"
-        "🚀 Instagram link yuboring!"
-    )
-    bot.send_message(message.chat.id, text, parse_mode="Markdown")
-
-# =========================
-# VIDEO YUKLASH FUNKSIYA
+# Video yuklash funksiyasi
 # =========================
 def download_video(url):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -55,12 +43,41 @@ def download_video(url):
     return filename, title
 
 # =========================
-# LINK QABUL QILISH
+# Faylni o‘chirish
+# =========================
+def safe_remove(path):
+    try:
+        if path and os.path.exists(path):
+            os.remove(path)
+    except:
+        pass
+
+# =========================
+# /start
+# =========================
+@bot.message_handler(commands=["start"])
+def start(message):
+
+    users.add(message.from_user.id)
+
+    text = (
+        "✨ *Assalomu alaykum!* ✨\n\n"
+        "🤖 *Men Pixo Botman*\n"
+        "📥 Instagram videolarini yuklab beraman.\n\n"
+        f"👥 Foydalanuvchilar: *{len(users)}*\n\n"
+        "⬇️ Instagram Reel yoki Post link yuboring!"
+    )
+
+    bot.send_message(message.chat.id, text, parse_mode="Markdown")
+
+# =========================
+# Link handler
 # =========================
 @bot.message_handler(func=lambda m: True)
-def handle_link(message):
+def handler(message):
 
     url = message.text.strip()
+    users.add(message.from_user.id)
 
     if "instagram.com" not in url:
         bot.reply_to(message, "❌ Faqat Instagram link yuboring.")
@@ -84,18 +101,36 @@ def handle_link(message):
         bot.delete_message(message.chat.id, msg.message_id)
 
     except Exception as e:
+
         bot.edit_message_text(
-            f"❌ Xatolik yuz berdi:\n{e}",
+            f"❌ Xato yuz berdi:\n{e}",
             message.chat.id,
             msg.message_id
         )
 
     finally:
-        if file_path and os.path.exists(file_path):
-            os.remove(file_path)
+        safe_remove(file_path)
 
 # =========================
-# BOT START
+# Telegram bot thread
 # =========================
-print("Pixo bot ishga tushdi...")
-bot.infinity_polling(skip_pending=True)
+def run_bot():
+    bot.infinity_polling(skip_pending=True)
+
+threading.Thread(target=run_bot).start()
+
+# =========================
+# Flask web service
+# =========================
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    return "🚀 Pixo Instagram Video Bot ishlayapti!"
+
+# =========================
+# Flask start
+# =========================
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
