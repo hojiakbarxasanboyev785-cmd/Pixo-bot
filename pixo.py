@@ -19,7 +19,9 @@ os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 # Foydalanuvchilar
 users = set()
 
+# =========================
 # yt-dlp sozlamalari
+# =========================
 ydl_opts = {
     "format": "best",
     "outtmpl": f"{DOWNLOAD_FOLDER}/%(title)s.%(ext)s",
@@ -38,7 +40,7 @@ def download_video(url):
     return filename, title
 
 # =========================
-# Faylni tozalash
+# Faylni o'chirish
 # =========================
 def safe_remove(path):
     try:
@@ -48,56 +50,64 @@ def safe_remove(path):
         pass
 
 # =========================
-# /start handler
+# /start
 # =========================
 @bot.message_handler(commands=["start"])
 def start(message):
     users.add(message.from_user.id)
-    start_text = (
+
+    text = (
         "✨ *Salom, men Pixo Video Botman!* ✨\n\n"
-        "🎬 Men Instagram videolarini yuklab bera olaman.\n"
-        "📊 Foydalanuvchilar soni: *{users_count}*\n\n"
-        "⬇️ Video linkini shu yerga yuboring va men uni yuklab beraman!"
-    ).format(users_count=len(users))
-    bot.send_message(
-        message.chat.id,
-        start_text,
-        parse_mode="Markdown"
+        "🎬 Instagram videolarini yuklab beraman.\n"
+        f"👥 Foydalanuvchilar soni: *{len(users)}*\n\n"
+        "⬇️ Instagram video linkini yuboring."
     )
 
+    bot.send_message(message.chat.id, text, parse_mode="Markdown")
+
 # =========================
-# /video handler
+# Video yuklash
 # =========================
 @bot.message_handler(func=lambda message: True)
-def handle_video(message):
+def download_handler(message):
+
     url = message.text.strip()
     users.add(message.from_user.id)
 
-    msg = bot.reply_to(message, "⏳ Video yuklanmoqda... Iltimos kuting! 🎬")
+    msg = bot.reply_to(message, "⏳ Video yuklanmoqda...")
+
     file_path = None
+
     try:
         file_path, title = download_video(url)
+
         with open(file_path, "rb") as video:
             bot.send_video(
                 message.chat.id,
                 video,
-                caption=f"🎬 Video nomi: {title}\n📤 Yukladi: Pixo Bot",
+                caption=f"🎬 Video: {title}\n📤 Yukladi: Pixo Bot",
                 supports_streaming=True
             )
+
         bot.delete_message(message.chat.id, msg.message_id)
+
     except Exception as e:
-        bot.edit_message_text(f"❌ Xato yuz berdi:\n{e}", message.chat.id, msg.message_id)
+        bot.edit_message_text(
+            f"❌ Xato yuz berdi:\n{e}",
+            message.chat.id,
+            msg.message_id
+        )
+
     finally:
         safe_remove(file_path)
 
 # =========================
-# Telegram botni thread-da ishga tushirish
+# Bot thread
 # =========================
 def run_bot():
     bot.infinity_polling(skip_pending=True)
 
-bot_thread = threading.Thread(target=run_bot)
-bot_thread.start()
+threading.Thread(target=run_bot).start()
 
 # =========================
 # Flask Web Service
@@ -105,11 +115,11 @@ bot_thread.start()
 app = Flask(__name__)
 
 @app.route("/")
-def index():
-    return "🚀 Pixo Video Bot ishlayapti!"
+def home():
+    return "🚀 Pixo bot ishlayapti!"
 
 # =========================
-# Flask server ishga tushishi
+# Server start
 # =========================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
