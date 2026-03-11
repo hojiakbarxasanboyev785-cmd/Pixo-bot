@@ -19,82 +19,83 @@ TEMP_DIR = os.path.expanduser("~")
 # ===== VILOYAT VA TUMANLAR =====
 HUDUDLAR = {
     "🏙 Toshkent shahri": [
-        "Bektemir", "Chilonzor", "Hamza", "Mirzo Ulug'bek",
-        "Mirobod", "Olmazar", "Sergeli", "Shayxontohur",
-        "Uchtepa", "Yakkasaroy", "Yashnobod", "Yunusobod"
+        "🏢 Bektemir", "🏢 Chilonzor", "🏢 Hamza", "🏢 Mirzo Ulug'bek",
+        "🏢 Mirobod", "🏢 Olmazar", "🏢 Sergeli", "🏢 Shayxontohur",
+        "🏢 Uchtepa", "🏢 Yakkasaroy", "🏢 Yashnobod", "🏢 Yunusobod"
     ],
     "🌆 Toshkent viloyati": [
-        "Angren", "Bekabad", "Bo'ka", "Bostonliq", "Chinoz",
-        "Chirchiq", "Kibray", "Keles", "Nurafshon", "Ohangaron",
-        "Olmaliq", "Oqqo'rg'on", "O'rtachirchiq", "Parkent",
-        "Piskent", "Qibray", "Toshkent tumani", "Yangiyo'l",
-        "Yuqorichirchiq", "Zangiota"
+        "🏘 Angren", "🏘 Bekabad", "🏘 Bo'ka", "🏘 Bostonliq", "🏘 Chinoz",
+        "🏘 Chirchiq", "🏘 Kibray", "🏘 Keles", "🏘 Nurafshon", "🏘 Ohangaron",
+        "🏘 Olmaliq", "🏘 Oqqo'rg'on", "🏘 O'rtachirchiq", "🏘 Parkent",
+        "🏘 Piskent", "🏘 Qibray", "🏘 Toshkent tumani", "🏘 Yangiyo'l",
+        "🏘 Yuqorichirchiq", "🏘 Zangiota"
     ],
     "🏛 Samarqand viloyati": [
-        "Bulung'ur", "Ishtixon", "Jomboy", "Kattaqo'rg'on",
-        "Narpay", "Nurobod", "Oqdaryo", "Pastdarg'om",
-        "Paxtachi", "Payariq", "Qo'shrabot", "Samarqand tumani",
-        "Toyloq", "Urgut"
+        "🏘 Bulung'ur", "🏘 Ishtixon", "🏘 Jomboy", "🏘 Kattaqo'rg'on",
+        "🏘 Narpay", "🏘 Nurobod", "🏘 Oqdaryo", "🏘 Pastdarg'om",
+        "🏘 Paxtachi", "🏘 Payariq", "🏘 Qo'shrabot", "🏘 Samarqand tumani",
+        "🏘 Toyloq", "🏘 Urgut"
     ],
     "🕌 Buxoro viloyati": [
-        "Buxoro tumani", "G'ijduvon", "Jondor", "Kogon",
-        "Olot", "Peshku", "Qorako'l", "Qorovulbozor",
-        "Romitan", "Shofirkon", "Vobkent"
+        "🏘 Buxoro tumani", "🏘 G'ijduvon", "🏘 Jondor", "🏘 Kogon",
+        "🏘 Olot", "🏘 Peshku", "🏘 Qorako'l", "🏘 Qorovulbozor",
+        "🏘 Romitan", "🏘 Shofirkon", "🏘 Vobkent"
     ],
     "🌿 Namangan viloyati": [
-        "Chortoq", "Chust", "Davlatobod", "Kosonsoy",
-        "Mingbuloq", "Namangan tumani", "Norin", "Pop",
-        "To'raqo'rg'on", "Uchqo'rg'on", "Uychi", "Yangiqo'rg'on"
+        "🏘 Chortoq", "🏘 Chust", "🏘 Davlatobod", "🏘 Kosonsoy",
+        "🏘 Mingbuloq", "🏘 Namangan tumani", "🏘 Norin", "🏘 Pop",
+        "🏘 To'raqo'rg'on", "🏘 Uchqo'rg'on", "🏘 Uychi", "🏘 Yangiqo'rg'on"
     ],
     "🌄 Farg'ona viloyati": [
-        "Beshariq", "Bog'dod", "Buvayda", "Dang'ara",
-        "Farg'ona tumani", "Furqat", "Marg'ilon", "Oltiariq",
-        "Quva", "Qo'qon", "Rishton", "Toshloq",
-        "Uchko'prik", "O'zbekiston tumani", "Yozyovon"
+        "🏘 Beshariq", "🏘 Bog'dod", "🏘 Buvayda", "🏘 Dang'ara",
+        "🏘 Farg'ona tumani", "🏘 Furqat", "🏘 Marg'ilon", "🏘 Oltiariq",
+        "🏘 Quva", "🏘 Qo'qon", "🏘 Rishton", "🏘 Toshloq",
+        "🏘 Uchko'prik", "🏘 O'zbekiston tumani", "🏘 Yozyovon"
     ],
     "🏔 Andijon viloyati": [
-        "Andijon tumani", "Asaka", "Baliqchi", "Bo'z",
-        "Buloqboshi", "Izboskan", "Jalolquduq", "Marhamat",
-        "Oltinkol", "Paxtaobod", "Qo'rg'ontepa", "Shahrixon",
-        "Ulug'nor", "Xo'jaobod"
+        "🏘 Andijon tumani", "🏘 Asaka", "🏘 Baliqchi", "🏘 Bo'z",
+        "🏘 Buloqboshi", "🏘 Izboskan", "🏘 Jalolquduq", "🏘 Marhamat",
+        "🏘 Oltinkol", "🏘 Paxtaobod", "🏘 Qo'rg'ontepa", "🏘 Shahrixon",
+        "🏘 Ulug'nor", "🏘 Xo'jaobod"
     ],
     "🌊 Xorazm viloyati": [
-        "Bog'ot", "Gurlan", "Hazorasp", "Xiva tumani",
-        "Xonqa", "Qo'shko'pir", "Shovot", "Tuproqqal'a",
-        "Urganch tumani", "Yangiariq", "Yangibozor"
+        "🏘 Bog'ot", "🏘 Gurlan", "🏘 Hazorasp", "🏘 Xiva tumani",
+        "🏘 Xonqa", "🏘 Qo'shko'pir", "🏘 Shovot", "🏘 Tuproqqal'a",
+        "🏘 Urganch tumani", "🏘 Yangiariq", "🏘 Yangibozor"
     ],
     "🏜 Qashqadaryo viloyati": [
-        "Chiroqchi", "Dehqonobod", "G'uzor", "Kamashi",
-        "Qarshi tumani", "Kasbi", "Kitob", "Koson",
-        "Mirishkor", "Muborak", "Nishon", "Qamashi",
-        "Shahrisabz tumani", "Yakkabog'"
+        "🏘 Chiroqchi", "🏘 Dehqonobod", "🏘 G'uzor", "🏘 Kamashi",
+        "🏘 Qarshi tumani", "🏘 Kasbi", "🏘 Kitob", "🏘 Koson",
+        "🏘 Mirishkor", "🏘 Muborak", "🏘 Nishon", "🏘 Qamashi",
+        "🏘 Shahrisabz tumani", "🏘 Yakkabog'"
     ],
     "🌋 Surxondaryo viloyati": [
-        "Angor", "Bandixon", "Boysun", "Denov",
-        "Jarqo'rg'on", "Muzrabot", "Oltinsoy", "Qiziriq",
-        "Qumqo'rg'on", "Sariosiyo", "Sherobod", "Sho'rchi",
-        "Termiz tumani", "Uzun"
+        "🏘 Angor", "🏘 Bandixon", "🏘 Boysun", "🏘 Denov",
+        "🏘 Jarqo'rg'on", "🏘 Muzrabot", "🏘 Oltinsoy", "🏘 Qiziriq",
+        "🏘 Qumqo'rg'on", "🏘 Sariosiyo", "🏘 Sherobod", "🏘 Sho'rchi",
+        "🏘 Termiz tumani", "🏘 Uzun"
     ],
     "⛰ Navoiy viloyati": [
-        "Karmana", "Konimex", "Navbahor", "Navoiy tumani",
-        "Nurota", "Qiziltepa", "Tomdi", "Uchquduq",
-        "Xatirchi", "Zarafshon"
+        "🏘 Karmana", "🏘 Konimex", "🏘 Navbahor", "🏘 Navoiy tumani",
+        "🏘 Nurota", "🏘 Qiziltepa", "🏘 Tomdi", "🏘 Uchquduq",
+        "🏘 Xatirchi", "🏘 Zarafshon"
     ],
     "🌾 Jizzax viloyati": [
-        "Arnasoy", "Baxmal", "Do'stlik", "Forish",
-        "G'allaorol", "Jizzax tumani", "Mirzacho'l",
-        "Paxtakor", "Sharof Rashidov", "Yangiobod",
-        "Zarbdor", "Zomin"
+        "🏘 Arnasoy", "🏘 Baxmal", "🏘 Do'stlik", "🏘 Forish",
+        "🏘 G'allaorol", "🏘 Jizzax tumani", "🏘 Mirzacho'l",
+        "🏘 Paxtakor", "🏘 Sharof Rashidov", "🏘 Yangiobod",
+        "🏘 Zarbdor", "🏘 Zomin"
     ],
     "🌻 Sirdaryo viloyati": [
-        "Baxt", "Boyovut", "Guliston tumani", "Mirzaobod",
-        "Oqoltin", "Sardoba", "Sayxunobod", "Sirdaryo tumani", "Xovos"
+        "🏘 Baxt", "🏘 Boyovut", "🏘 Guliston tumani", "🏘 Mirzaobod",
+        "🏘 Oqoltin", "🏘 Sardoba", "🏘 Sayxunobod", "🏘 Sirdaryo tumani",
+        "🏘 Xovos"
     ],
     "🏝 Qoraqalpog'iston": [
-        "Amudaryo", "Beruniy", "Bozatov", "Chimboy",
-        "Ellikkala", "Kegeyli", "Mo'ynoq", "Nukus tumani",
-        "Qonliko'l", "Qorao'zak", "Shumanay", "Taxiatosh",
-        "Taxtako'pir", "To'rtko'l", "Xo'jayli"
+        "🏘 Amudaryo", "🏘 Beruniy", "🏘 Bozatov", "🏘 Chimboy",
+        "🏘 Ellikkala", "🏘 Kegeyli", "🏘 Mo'ynoq", "🏘 Nukus tumani",
+        "🏘 Qonliko'l", "🏘 Qorao'zak", "🏘 Shumanay", "🏘 Taxiatosh",
+        "🏘 Taxtako'pir", "🏘 To'rtko'l", "🏘 Xo'jayli"
     ],
 }
 
