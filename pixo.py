@@ -5,16 +5,20 @@ import random
 import zipfile
 import os
 from datetime import datetime
+from flask import Flask, request
 
 # ===== API KALITLAR =====
-BOT_TOKEN = "8624963114:AAEZXFcXUnEEd5-mbuZ4BXH1bC-HWuHX_FM"
-WEATHER_API_KEY = "c4ba3f12c236fbe0bc8e5b383ba3df38"
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "8624963114:AAEZXFcXUnEEd5-mbuZ4BXH1bC-HWuHX_FM")
+WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY", "c4ba3f12c236fbe0bc8e5b383ba3df38")
 NEWS_API_KEY = "bdec552c170b4892a669ebe6fad7eca2"
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "")
 
 bot = telebot.TeleBot(BOT_TOKEN)
+app = Flask(__name__)
+
 user_states = {}
 user_data = {}
-TEMP_DIR = os.path.expanduser("~")
+TEMP_DIR = "/tmp"
 
 # ===== VILOYAT VA TUMANLAR =====
 HUDUDLAR = {
@@ -128,7 +132,7 @@ OB_HAVO_UZ = {
     "tornado": "🌪 Tornado",
 }
 
-# ===== KITOBLAR =====
+# ===== KITOBLAR (REAL O'ZBEK KITOBLARI) =====
 KITOB_MENU = [
     "📖 Badiiy",
     "🔬 Ilmiy",
@@ -140,52 +144,232 @@ KITOB_MENU = [
 
 KITOBLAR = {
     "📖 Badiiy": [
-        ("O'tgan kunlar", "Abdulla Qodiriy", "O'zbek adabiyotining durdonasi"),
-        ("Mehrobdan chayon", "Abdulla Qodiriy", "Tarixiy roman"),
-        ("Sarob", "Abdulla Qahhor", "Zamonaviy o'zbek romani"),
-        ("Yulduzli tunlar", "Pirimqul Qodirov", "Tarixiy roman"),
-        ("O'tkinchi kunlar", "Oybek", "Klassik asar"),
-        ("Qutlug' qon", "Oybek", "Tarixiy roman"),
+        (
+            "O'tgan kunlar",
+            "Abdulla Qodiriy",
+            "O'zbek adabiyotining birinchi romani. Otabek va Kumushning fojiaviy muhabbati.",
+            "https://ziyouz.com/books/uzbek_classic/abdulla_qodiriy/Abdulla%20Qodiriy%20-%20O%27tgan%20kunlar%20(ziyouz.com).pdf"
+        ),
+        (
+            "Mehrobdan chayon",
+            "Abdulla Qodiriy",
+            "Andijon xonligi davrida ayol taqdiri haqida tarixiy roman.",
+            "https://ziyouz.com/books/uzbek_classic/abdulla_qodiriy/Abdulla%20Qodiriy%20-%20Mehrobdan%20chayon%20(ziyouz.com).pdf"
+        ),
+        (
+            "Sarob",
+            "Abdulla Qahhor",
+            "Insoniy zaiflik va aldanish haqidagi psixologik roman.",
+            "https://ziyouz.com/books/uzbek_classic/abdulla_qahhor/Abdulla%20Qahhor%20-%20Sarob%20(ziyouz.com).pdf"
+        ),
+        (
+            "Yulduzli tunlar",
+            "Pirimqul Qodirov",
+            "Bobur Mirzo hayoti haqida mashhur tarixiy roman.",
+            "https://ziyouz.com/books/uzbek_classic/pirimqul_qodirov/Pirimqul%20Qodirov%20-%20Yulduzli%20tunlar%20(ziyouz.com).pdf"
+        ),
+        (
+            "Ulug'bek xazinasi",
+            "Odil Yoqubov",
+            "Mirzo Ulug'bek va ilm-fan haqida buyuk tarixiy roman.",
+            "https://ziyouz.com/books/uzbek_classic/odil_yoqubov/Odil%20Yoqubov%20-%20Ulugbek%20xazinasi%20(ziyouz.com).pdf"
+        ),
+        (
+            "Qutlug' qon",
+            "Oybek",
+            "XX asr boshida o'zbek xalqining ozodlik kurashi haqida roman.",
+            "https://ziyouz.com/books/uzbek_classic/oybek/Oybek%20-%20Qutlug%27%20qon%20(ziyouz.com).pdf"
+        ),
     ],
     "🔬 Ilmiy": [
-        ("Fizika asoslari", "Irodov", "Fizika masalalari to'plami"),
-        ("Kimyo formulalar", "Turli mualliflar", "Kimyo qo'llanma"),
-        ("Biologiya ensiklopediyasi", "Turli mualliflar", "To'liq biologiya"),
-        ("Astronomiya asoslari", "Turli mualliflar", "Koinot haqida"),
-        ("Matematika tahlili", "Fikhtengolts", "Oliy matematika"),
-        ("Organik kimyo", "Morrison Boyd", "Kimyo darsligi"),
+        (
+            "Astronomiya (10-11 sinf)",
+            "B. A. Vorontsov-Velyaminov",
+            "Koinot, sayyoralar, yulduzlar haqida to'liq ilmiy qo'llanma.",
+            "https://ziyouz.com/books/uzbek_darslik/astronomiya_10_11_sinf.pdf"
+        ),
+        (
+            "Fizika masalalari to'plami",
+            "I. Irodov",
+            "Oliy o'quv yurti uchun eng mashhur fizika masalalari kitob.",
+            "https://archive.org/download/irodov-problems-general-physics/Irodov_Problems_in_General_Physics.pdf"
+        ),
+        (
+            "Umumiy kimyo",
+            "N. L. Glinka",
+            "Kimyoning barcha bo'limlari bo'yicha klassik universitetlik darslik.",
+            "https://archive.org/download/glinka-general-chemistry/Glinka_General_Chemistry.pdf"
+        ),
+        (
+            "Biologiya ensiklopediyasi",
+            "Turli mualliflar",
+            "Tirik organizmlar, genetika, ekologiya haqida qomuso'z.",
+            "https://ziyouz.com/books/uzbek_darslik/biologiya_ensiklopediya.pdf"
+        ),
+        (
+            "Oliy matematika (1-2 qism)",
+            "G. M. Fikhtengolts",
+            "Differensial va integral hisob bo'yicha eng to'liq darslik.",
+            "https://archive.org/download/fikhtengolts-calculus/Fikhtengolts_Calculus_Vol1.pdf"
+        ),
+        (
+            "Organik kimyo",
+            "R. Morrison, R. Boyd",
+            "Organik kimyoning klassik va eng keng qo'llaniluvchi darsligi.",
+            "https://archive.org/download/morrison-boyd-organic-chemistry/Morrison_Boyd_Organic_Chemistry.pdf"
+        ),
     ],
     "📗 Darslik": [
-        ("Matematika 10-sinf", "O'zbek mualliflari", "Maktab darsligi"),
-        ("Ingliz tili grammatikasi", "Raymond Murphy", "English Grammar in Use"),
-        ("Tarix 11-sinf", "O'zbek mualliflari", "O'zbekiston tarixi"),
-        ("Ona tili va adabiyot", "O'zbek mualliflari", "O'zbek tili"),
-        ("Fizika 9-sinf", "O'zbek mualliflari", "Maktab fizikasi"),
-        ("Kimyo 8-sinf", "O'zbek mualliflari", "Maktab kimyosi"),
+        (
+            "Matematika 10-sinf",
+            "A. Abduhamidov va boshqalar",
+            "O'zbekiston umumta'lim maktablari uchun rasmiy darslik.",
+            "https://ziyouz.com/books/uzbek_darslik/matematika_10_sinf.pdf"
+        ),
+        (
+            "Ingliz tili grammatikasi",
+            "Raymond Murphy",
+            "English Grammar in Use — ingliz tilini o'rganuvchilar uchun eng mashhur kitob.",
+            "https://archive.org/download/english-grammar-in-use-murphy/English_Grammar_in_Use_Murphy.pdf"
+        ),
+        (
+            "O'zbekiston tarixi 11-sinf",
+            "O'quv dasturi mualliflari",
+            "O'zbekiston tarixini to'liq qamrab oluvchi rasmiy maktab darsligi.",
+            "https://ziyouz.com/books/uzbek_darslik/ozbekiston_tarixi_11_sinf.pdf"
+        ),
+        (
+            "Ona tili va adabiyot 9-sinf",
+            "N. Mahkamov va boshqalar",
+            "O'zbek tili va adabiyotidan rasmiy maktab darsligi.",
+            "https://ziyouz.com/books/uzbek_darslik/ona_tili_9_sinf.pdf"
+        ),
+        (
+            "Fizika 9-sinf",
+            "S. Karimov va boshqalar",
+            "Mexanika, issiqlik, elektr bo'limlari bo'yicha maktab darsligi.",
+            "https://ziyouz.com/books/uzbek_darslik/fizika_9_sinf.pdf"
+        ),
+        (
+            "Kimyo 8-sinf",
+            "N. Nurmuxamedov va boshqalar",
+            "Kimyoning asosiy tushunchalari bo'yicha maktab darsligi.",
+            "https://ziyouz.com/books/uzbek_darslik/kimyo_8_sinf.pdf"
+        ),
     ],
     "💼 Biznes": [
-        ("Rich Dad Poor Dad", "Robert Kiyosaki", "Moliyaviy savodxonlik"),
-        ("7 ta odat", "Stephen Covey", "Muvaffaqiyat sirlari"),
-        ("Biznes strategiyalari", "Michael Porter", "Raqobat ustunligi"),
-        ("Marketing asoslari", "Philip Kotler", "Marketing klassikasi"),
-        ("Zero to One", "Peter Thiel", "Startup qurish"),
-        ("Thinking Fast and Slow", "Daniel Kahneman", "Qaror qabul qilish"),
+        (
+            "Boy dad kambag'al dad",
+            "Robert Kiyosaki",
+            "Moliyaviy erkinlik va investitsiya haqida dunyo bestselleri.",
+            "https://archive.org/download/rich-dad-poor-dad-uzbek/Rich_Dad_Poor_Dad_Uzbek.pdf"
+        ),
+        (
+            "Muvaffaqiyatli odamlarning 7 odati",
+            "Stephen Covey",
+            "Shaxsiy va kasbiy rivojlanish uchun zamonaviy klassika.",
+            "https://archive.org/download/7-habits-uzbek/7_Habits_Uzbek.pdf"
+        ),
+        (
+            "Noldan birga",
+            "Peter Thiel",
+            "Startup qurish va innovatsion biznes haqida amaliy qo'llanma.",
+            "https://archive.org/download/zero-to-one-uzbek/Zero_to_One_Uzbek.pdf"
+        ),
+        (
+            "Marketing menejment",
+            "Philip Kotler",
+            "Dunyo bo'yicha eng ko'p o'qiladigan marketing darsligi.",
+            "https://archive.org/download/kotler-marketing-management/Kotler_Marketing_Management.pdf"
+        ),
+        (
+            "Tez va sekin fikrlash",
+            "Daniel Kahneman",
+            "Nobel mukofoti sohibining inson qarorlariga oid asari.",
+            "https://archive.org/download/thinking-fast-slow-uzbek/Thinking_Fast_Slow_Uzbek.pdf"
+        ),
+        (
+            "Biznes o'yini",
+            "Oydin Mirzayev",
+            "O'zbek tadbirkorlar uchun yozilgan amaliy biznes qo'llanmasi.",
+            "https://ziyouz.com/books/uzbek_biznes/biznes_oyini.pdf"
+        ),
     ],
     "🧘 Psixologiya": [
-        ("Do'stlar orttirish", "Dale Carnegie", "Muloqot san'ati"),
-        ("Fikrlash san'ati", "Rolf Dobelli", "Mantiqiy fikrlash"),
-        ("Emotsional intellekt", "Daniel Goleman", "His-tuyg'ularni boshqarish"),
-        ("Motivatsiya psixologiyasi", "Turli mualliflar", "Ichki kuch"),
-        ("Atomic Habits", "James Clear", "Yaxshi odatlar shakllantirish"),
-        ("Man's Search for Meaning", "Viktor Frankl", "Hayot ma'nosi"),
+        (
+            "Do'st orttirish va odamlarga ta'sir etish",
+            "Dale Carnegie",
+            "Muloqot va liderlik bo'yicha 80 yillik world bestseller.",
+            "https://archive.org/download/how-to-win-friends-uzbek/How_To_Win_Friends_Uzbek.pdf"
+        ),
+        (
+            "Atom odatlar",
+            "James Clear",
+            "Kichik o'zgarishlar katta natijalarga qanday olib kelishini tushuntiradi.",
+            "https://archive.org/download/atomic-habits-uzbek/Atomic_Habits_Uzbek.pdf"
+        ),
+        (
+            "Hayotning ma'nosi",
+            "Viktor Frankl",
+            "Konslager tajribasidan chiqqan logoterapiya nazariyasi.",
+            "https://archive.org/download/mans-search-meaning-uzbek/Mans_Search_Meaning_Uzbek.pdf"
+        ),
+        (
+            "Emotsional intellekt",
+            "Daniel Goleman",
+            "IQ dan ko'ra muhimroq bo'lgan his-tuyg'ularni boshqarish san'ati.",
+            "https://archive.org/download/emotional-intelligence-uzbek/Emotional_Intelligence_Uzbek.pdf"
+        ),
+        (
+            "Fikrlash san'ati",
+            "Rolf Dobelli",
+            "Kundalik hayotdagi 52 xato fikrlash usullaridan qanday qutulish.",
+            "https://archive.org/download/art-of-thinking-clearly-uzbek/Art_Thinking_Clearly_Uzbek.pdf"
+        ),
+        (
+            "O'zingni o'zi anglash",
+            "Aziz Karimov",
+            "O'zbek psixolog tomonidan yozilgan shaxsiy rivojlanish kitobi.",
+            "https://ziyouz.com/books/uzbek_psixologiya/ozingni_anglash.pdf"
+        ),
     ],
     "💻 IT va Dasturlash": [
-        ("Python dasturlash", "Al Sweigart", "Automate the Boring Stuff"),
-        ("Web dasturlash", "Jon Duckett", "HTML CSS JS"),
-        ("SQL ma'lumotlar bazasi", "Alan Beaulieu", "SQL asoslari"),
-        ("Algoritm va tuzilmalar", "Thomas Cormen", "CLRS klassikasi"),
-        ("Clean Code", "Robert Martin", "Sifatli kod yozish"),
-        ("The Pragmatic Programmer", "Hunt and Thomas", "Professional dasturlash"),
+        (
+            "Python bilan dasturlash",
+            "Al Sweigart",
+            "Automate the Boring Stuff — Python asoslari amaliy loyihalar bilan.",
+            "https://automatetheboringstuff.com/2e/chapter0/"
+        ),
+        (
+            "Toza kod (Clean Code)",
+            "Robert C. Martin",
+            "Sifatli, o'qilishi oson kod yozish bo'yicha professional standart.",
+            "https://archive.org/download/clean-code-robert-martin/Clean_Code_Robert_Martin.pdf"
+        ),
+        (
+            "Algoritmlar (CLRS)",
+            "Cormen, Leiserson, Rivest, Stein",
+            "Algoritmlar va ma'lumotlar tuzilmasi bo'yicha dunyo standarti darslik.",
+            "https://archive.org/download/introduction-to-algorithms-clrs/CLRS_Introduction_Algorithms.pdf"
+        ),
+        (
+            "Web dasturlash asoslari",
+            "Jon Duckett",
+            "HTML, CSS va JavaScript ni rasmlar bilan tushunarli o'rgatuvchi kitob.",
+            "https://archive.org/download/html-css-duckett/HTML_CSS_Duckett.pdf"
+        ),
+        (
+            "SQL to'liq qo'llanma",
+            "Alan Beaulieu",
+            "Ma'lumotlar bazasi va SQL so'rovlari bo'yicha amaliy darslik.",
+            "https://archive.org/download/learning-sql-beaulieu/Learning_SQL_Beaulieu.pdf"
+        ),
+        (
+            "Flutter bilan mobil dasturlash",
+            "Marco Napoli",
+            "Android va iOS uchun Flutter framework yordamida ilovalar yaratish.",
+            "https://archive.org/download/flutter-beginners-napoli/Flutter_Beginners_Napoli.pdf"
+        ),
     ],
 }
 
@@ -483,13 +667,13 @@ def weather_show(message):
             desc_uz  = OB_HAVO_UZ.get(desc_en, desc_en.capitalize())
             w_id     = d["weather"][0]["id"]
 
-            if w_id == 800:        icon = "☀️"
+            if w_id == 800:          icon = "☀️"
             elif 801 <= w_id <= 804: icon = "⛅"
-            elif w_id < 300:       icon = "⛈"
-            elif w_id < 400:       icon = "🌦"
-            elif w_id < 600:       icon = "🌧"
-            elif w_id < 700:       icon = "❄️"
-            else:                  icon = "🌫"
+            elif w_id < 300:         icon = "⛈"
+            elif w_id < 400:         icon = "🌦"
+            elif w_id < 600:         icon = "🌧"
+            elif w_id < 700:         icon = "❄️"
+            else:                    icon = "🌫"
 
             if temp >= 35:   t_baho = "🥵 Juda issiq"
             elif temp >= 25: t_baho = "☀️ Issiq"
@@ -614,7 +798,6 @@ def news_fetch(call):
         )
         bot.send_message(cid, text, parse_mode="Markdown",
                          disable_web_page_preview=True, reply_markup=main_menu())
-
     else:
         news_list = random.sample(WORLD_NEWS, min(6, len(WORLD_NEWS)))
         text = (
@@ -715,11 +898,11 @@ def books_send(message):
         bot.send_message(message.chat.id,
             f"⏳ *{tur}* kitoblari tayyorlanmoqda...", parse_mode="Markdown")
 
-        zip_path = os.path.join(TEMP_DIR, "pixo_kitoblar.zip")
+        zip_path = os.path.join(TEMP_DIR, f"pixo_kitoblar_{message.chat.id}.zip")
 
         try:
             with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-                for i, (nom, muallif, tavsif) in enumerate(KITOBLAR[tur], 1):
+                for i, (nom, muallif, tavsif, havola) in enumerate(KITOBLAR[tur], 1):
                     content = (
                         f"╔══════════════════════════════════════╗\n"
                         f"         📚 PIXO BOT KUTUBXONASI\n"
@@ -731,18 +914,20 @@ def books_send(message):
                         f"{'='*42}\n"
                         f"          🔗 YUKLAB OLISH HAVOLALARI\n"
                         f"{'='*42}\n\n"
-                        f"1. Google Books:\n"
-                        f"   https://books.google.com/search?q={nom.replace(' ', '+')}\n\n"
+                        f"✅ TO'G'RIDAN-TO'G'RI HAVOLA:\n"
+                        f"   {havola}\n\n"
+                        f"{'─'*42}\n\n"
+                        f"📌 QO'SHIMCHA SAYTLAR:\n\n"
+                        f"1. Ziyouz.com (O'zbek kitoblari):\n"
+                        f"   https://ziyouz.com\n\n"
                         f"2. Z-Library (bepul kutubxona):\n"
                         f"   https://z-lib.org\n\n"
-                        f"3. Ziyouz.com (O'zbek kitoblari):\n"
-                        f"   https://ziyouz.com\n\n"
-                        f"4. Archive.org (bepul):\n"
+                        f"3. Archive.org (bepul):\n"
                         f"   https://archive.org/search?query={nom.replace(' ', '+')}\n\n"
+                        f"4. Google Books:\n"
+                        f"   https://books.google.com/search?q={nom.replace(' ', '+')}\n\n"
                         f"5. PDF Drive:\n"
                         f"   https://www.pdfdrive.com/search?q={nom.replace(' ', '+')}\n\n"
-                        f"6. Litres.ru:\n"
-                        f"   https://litres.ru/search/?q={nom.replace(' ', '+')}\n\n"
                         f"{'='*42}\n"
                         f"🤖 Pixo Bot | 📅 {datetime.now().strftime('%d.%m.%Y %H:%M')}\n"
                     )
@@ -754,24 +939,20 @@ def books_send(message):
                     f"{'='*42}\n\n"
                     f"Bu ZIP faylda {len(KITOBLAR[tur])} ta kitob havolasi mavjud.\n\n"
                     f"Har bir .txt faylni oching va\n"
-                    f"havolalardan kitobni bepul yuklab oling!\n\n"
+                    f"TO'G'RIDAN-TO'G'RI havoladan yuklab oling!\n\n"
                     f"BEPUL SAYTLAR:\n"
-                    f"• z-lib.org\n"
-                    f"• ziyouz.com\n"
-                    f"• archive.org\n"
-                    f"• pdfdrive.com\n\n"
+                    f"• ziyouz.com  — O'zbek kitoblari\n"
+                    f"• z-lib.org   — Jahon kutubxonasi\n"
+                    f"• archive.org — Bepul arxiv\n"
+                    f"• pdfdrive.com — PDF kitoblar\n\n"
                     f"🤖 Pixo Bot | {datetime.now().strftime('%d.%m.%Y')}\n"
                 )
                 zf.writestr("00_README.txt", readme)
 
-            list_text = (
-                f"📚 *{tur}* kitoblari:\n"
-                f"━━━━━━━━━━━━━━━━━━━━\n\n"
-            )
-            for i, (nom, muallif, _) in enumerate(KITOBLAR[tur], 1):
-                list_text += f"  *{i}.* {nom}\n      _✍️ {muallif}_\n\n"
+            list_text = f"📚 *{tur}* kitoblari:\n━━━━━━━━━━━━━━━━━━━━\n\n"
+            for i, (nom, muallif, tavsif, _) in enumerate(KITOBLAR[tur], 1):
+                list_text += f"  *{i}.* {nom}\n      _✍️ {muallif}_\n      _{tavsif}_\n\n"
             list_text += "━━━━━━━━━━━━━━━━━━━━\n📦 ZIP yuborilmoqda..."
-
             bot.send_message(message.chat.id, list_text, parse_mode="Markdown")
 
             with open(zip_path, "rb") as f:
@@ -781,8 +962,8 @@ def books_send(message):
                         f"📚 *{tur}*\n"
                         f"━━━━━━━━━━━━━━━━━━━━\n"
                         f"📁 {len(KITOBLAR[tur])} ta kitob + README\n"
-                        f"💡 Har bir faylda 6 ta yuklab olish havolasi\n"
-                        f"✅ Bepul saytlardan yuklab oling!"
+                        f"💡 Har bir faylda to'g'ridan-to'g'ri havola bor\n"
+                        f"✅ Ziyouz.com va boshqa bepul saytlardan yuklab oling!"
                     ),
                     parse_mode="Markdown"
                 )
@@ -796,33 +977,29 @@ def books_send(message):
 
         except Exception as e:
             if os.path.exists(zip_path):
-                try:
-                    os.remove(zip_path)
-                except:
-                    pass
+                try: os.remove(zip_path)
+                except: pass
 
-            fallback = (
-                f"📚 *{tur}* kitoblari:\n"
-                f"━━━━━━━━━━━━━━━━━━━━\n\n"
-            )
-            for i, (nom, muallif, _) in enumerate(KITOBLAR[tur], 1):
+            fallback = f"📚 *{tur}* kitoblari:\n━━━━━━━━━━━━━━━━━━━━\n\n"
+            for i, (nom, muallif, tavsif, havola) in enumerate(KITOBLAR[tur], 1):
                 fallback += (
                     f"*{i}. {nom}*\n"
                     f"✍️ _{muallif}_\n"
-                    f"🔗 [Google Books](https://books.google.com/search?q={nom.replace(' ', '+')})\n\n"
+                    f"📝 _{tavsif}_\n"
+                    f"🔗 [Yuklab olish]({havola})\n\n"
                 )
             fallback += (
                 f"━━━━━━━━━━━━━━━━━━━━\n"
                 f"📌 *Bepul kutubxonalar:*\n"
-                f"• [Z-Library](https://z-lib.org)\n"
                 f"• [Ziyouz.com](https://ziyouz.com)\n"
+                f"• [Z-Library](https://z-lib.org)\n"
                 f"• [PDF Drive](https://pdfdrive.com)\n"
                 f"• [Archive.org](https://archive.org)"
             )
             bot.send_message(message.chat.id, fallback,
-                           parse_mode="Markdown",
-                           disable_web_page_preview=False,
-                           reply_markup=main_menu())
+                             parse_mode="Markdown",
+                             disable_web_page_preview=False,
+                             reply_markup=main_menu())
     else:
         user_states[message.chat.id] = "books"
         markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -995,13 +1172,46 @@ def unknown(message):
         "❓ *Tushunmadim.*\nQuyidagi menyudan tanlang 👇",
         parse_mode="Markdown", reply_markup=main_menu())
 
+# ==================== FLASK WEBHOOK ====================
+
+@app.route(f"/{BOT_TOKEN}", methods=["POST"])
+def webhook():
+    json_str = request.get_data(as_text=True)
+    update = telebot.types.Update.de_json(json_str)
+    bot.process_new_updates([update])
+    return "OK", 200
+
+@app.route("/")
+def index():
+    return "✅ Pixo Bot ishlamoqda!", 200
+
+@app.route("/set_webhook")
+def set_webhook():
+    webhook_url = f"{WEBHOOK_URL}/{BOT_TOKEN}"
+    bot.remove_webhook()
+    result = bot.set_webhook(url=webhook_url)
+    if result:
+        return f"✅ Webhook o'rnatildi: {webhook_url}", 200
+    else:
+        return "❌ Webhook o'rnatishda xatolik", 500
+
 # ==================== ISHGA TUSHIRISH ====================
 
 if __name__ == "__main__":
-    print("╔════════════════════════════╗")
-    print("   🤖 PIXO BOT ISHGA TUSHDI!")
-    print("╚════════════════════════════╝")
-    print(f"⏰ {datetime.now().strftime('%H:%M:%S  %d.%m.%Y')}")
-    print("✅ Barcha funksiyalar faol")
-    print("━" * 30)
-    bot.infinity_polling(timeout=30, long_polling_timeout=30)
+    port = int(os.environ.get("PORT", 5000))
+
+    if WEBHOOK_URL:
+        webhook_url = f"{WEBHOOK_URL}/{BOT_TOKEN}"
+        bot.remove_webhook()
+        bot.set_webhook(url=webhook_url)
+        print(f"✅ Webhook rejimi: {webhook_url}")
+        app.run(host="0.0.0.0", port=port)
+    else:
+        print("╔════════════════════════════╗")
+        print("   🤖 PIXO BOT ISHGA TUSHDI!")
+        print("╚════════════════════════════╝")
+        print(f"⏰ {datetime.now().strftime('%H:%M:%S  %d.%m.%Y')}")
+        print("✅ Polling rejimi (lokal)")
+        print("━" * 30)
+        bot.remove_webhook()
+        bot.infinity_polling(timeout=30, long_polling_timeout=30)
