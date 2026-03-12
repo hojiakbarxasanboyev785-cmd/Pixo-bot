@@ -968,44 +968,39 @@ def news_fetch(call):
 @bot.message_handler(func=lambda m: m.text == "📊 Kripto narxlari")
 def crypto(message):
     bot.send_message(message.chat.id, "⏳ Kripto narxlar yuklanmoqda...")
+
     try:
-        ids = "bitcoin,ethereum,binancecoin,solana,toncoin,ripple,cardano,dogecoin,polkadot,avalanche-2"
-        url = (f"https://api.coingecko.com/api/v3/simple/price"
-               f"?ids={ids}&vs_currencies=usd&include_24hr_change=true")
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
+        url = "https://api.binance.com/api/v3/ticker/price"
+        r = requests.get(url, timeout=10)
         data = r.json()
 
-        COINS = [
-            ("bitcoin",     "₿",  "Bitcoin",   "BTC"),
-            ("ethereum",    "Ξ",  "Ethereum",  "ETH"),
-            ("binancecoin", "🔶", "BNB",        "BNB"),
-            ("solana",      "◎",  "Solana",    "SOL"),
-            ("toncoin",     "💎", "TON",        "TON"),
-            ("ripple",      "💧", "XRP",        "XRP"),
-            ("cardano",     "🔵", "Cardano",   "ADA"),
-            ("dogecoin",    "🐕", "Dogecoin",  "DOGE"),
-            ("polkadot",    "⚪", "Polkadot",  "DOT"),
-            ("avalanche-2", "🔺", "Avalanche", "AVAX"),
+        prices = {i["symbol"]: i["price"] for i in data}
+
+        coins = [
+            ("BTCUSDT", "₿ Bitcoin"),
+            ("ETHUSDT", "Ξ Ethereum"),
+            ("BNBUSDT", "🔶 BNB"),
+            ("SOLUSDT", "◎ Solana"),
+            ("TONUSDT", "💎 TON"),
+            ("XRPUSDT", "💧 XRP"),
+            ("ADAUSDT", "🔵 Cardano"),
+            ("DOGEUSDT", "🐕 Dogecoin"),
+            ("DOTUSDT", "⚪ Polkadot"),
+            ("AVAXUSDT", "🔺 Avalanche"),
         ]
 
-        text = (
-            f"📊 *Kripto Valyuta Narxlari*\n"
-            f"🕐 {datetime.now().strftime('%H:%M  |  %d.%m.%Y')}\n"
-            f"━━━━━━━━━━━━━━━━━━━━\n\n"
-        )
-        for cid_c, icon, name, sym in COINS:
-            if cid_c in data:
-                price  = data[cid_c].get("usd", 0)
-                change = data[cid_c].get("usd_24h_change", 0)
-                arrow  = "📈" if change >= 0 else "📉"
-                p_str  = f"${price:,.2f}" if price >= 1 else f"${price:.5f}"
-                text  += f"{icon} *{name}* `{sym}`\n   💵 {p_str}   {arrow} `{change:+.2f}%`\n\n"
-        text += "━━━━━━━━━━━━━━━━━━━━\n🔗 _Manba: CoinGecko_"
-        bot.send_message(message.chat.id, text, parse_mode="Markdown", reply_markup=main_menu())
+        text = "📊 Kripto narxlari\n━━━━━━━━━━━━━━\n\n"
+
+        for sym, name in coins:
+            if sym in prices:
+                p = float(prices[sym])
+                price = f"${p:,.2f}" if p > 1 else f"${p:.5f}"
+                text += f"{name}\n💵 {price}\n\n"
+
+        bot.send_message(message.chat.id, text, reply_markup=main_menu())
 
     except Exception as e:
-        bot.send_message(message.chat.id, f"⚠️ Xatolik: `{e}`",
-                         parse_mode="Markdown", reply_markup=main_menu())
+        bot.send_message(message.chat.id, f"❌ Xatolik:\n{e}", reply_markup=main_menu())
 
 # ==================== KITOBLAR ====================
 
