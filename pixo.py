@@ -454,6 +454,7 @@ LOGIC = [
 
 # ===== SAYOHAT =====
 SAYOHAT = {
+    # ===== O'ZBEKISTON =====
     "🏙 Toshkent": {
         "joylar": ["Xastimom masjidi", "Chorsu bozori", "Amir Temur xiyoboni", "Teleminora", "Eski shahar", "Muyi Muborak"],
         "taom": ["Non kabob", "Lagmon", "Dimlama", "Moshxo'rda", "Somsa"],
@@ -489,6 +490,148 @@ SAYOHAT = {
         "taom": ["Farg'ona palov", "Qozon kabob", "Chuchvara", "Lag'mon"],
         "maslahat": "Atlas ipak do'konlarini albatta ziyorat qiling! 🧵",
         "eng_yaxshi_vaqt": "Bahor va Yoz",
+    },
+    "🏔 Andijon": {
+        "joylar": ["Jome masjidi", "Bobur adabiyot muzeyi", "Andijon bozori", "Xo'ja Eshon masjidi"],
+        "taom": ["Andijon palov", "Somsa", "Chuchvara", "Mastava"],
+        "maslahat": "Bobur vatanini ziyorat qiling — tarixiy shahar! 📜",
+        "eng_yaxshi_vaqt": "Bahor va Kuz",
+    },
+    "🌊 Urganch": {
+        "joylar": ["Al-Xorazmiy xiyoboni", "Urganch bozori", "Qadimiy Urganch xarobalari", "Turobek Xonim maqbarasi"],
+        "taom": ["Xorazm oshi", "Shivit oshi", "Somsa", "Mastava"],
+        "maslahat": "Qadimiy Xorazm poytaxti — tarixi juda boy! 🏺",
+        "eng_yaxshi_vaqt": "Mart-May, Sentyabr-Oktyabr",
+    },
+    "🏜 Qarshi": {
+        "joylar": ["Ko'kgumbaz masjidi", "Qarshi qal'asi", "Dehqon bozori", "Poyonminor"],
+        "taom": ["Qashqadaryo palov", "Shashlik", "Somsa", "Lag'mon"],
+        "maslahat": "Qadimiy Naxshab shahri — tarixiy obidalarga boy! 🕌",
+        "eng_yaxshi_vaqt": "Oktyabr-Aprel",
+    },
+    "🌋 Termiz": {
+        "joylar": ["Fayoztepa buddaviy ibodatxonasi", "Sultan Saodat ansambli", "Termiz arxeologiya muzeyi", "Qoratеpa"],
+        "taom": ["Surxondaryo palov", "Shashlik", "Somsa", "Dimlama"],
+        "maslahat": "O'zbekistonning eng janubiy shahri — qadimiy buddaviy yodgorliklar! 🛕",
+        "eng_yaxshi_vaqt": "Oktyabr-Mart (yoz juda issiq)",
+    },
+    "⛰ Navoiy": {
+        "joylar": ["Navoiy teatri", "Zarafshon daryosi", "Karmana qal'asi", "Raboti Malik karvonsaroyi"],
+        "taom": ["Navoiy palov", "Somsa", "Shashlik", "Moshxo'rda"],
+        "maslahat": "Zarafshon vodiysi — tabiat go'zalligi ajoyib! 🌿",
+        "eng_yaxshi_vaqt": "Aprel-Iyun, Sentyabr-Noyabr",
+    },
+    "🌾 Jizzax": {
+        "joylar": ["Jizzax bozori", "Forish sharsharasi", "Sangzor daryosi", "Zomin milliy parki"],
+        "taom": ["Jizzax palov", "Somsa", "Shashlik", "Chuchvara"],
+        "maslahat": "Zomin milliy parki — tog' havosi va yashil tabiat! 🏕",
+        "eng_yaxshi_vaqt": "May-Sentyabr",
+    },
+    "🌻 Guliston": {
+        "joylar": ["Guliston bozori", "Sirdaryo bo'yi", "Farxod suv ombori", "Guliston xiyoboni"],
+        "taom": ["Sirdaryo palov", "Somsa", "Lag'mon", "Mastava"],
+        "maslahat": "Farxod suv ombori — baliq ovlash va dam olish uchun ajoyib! 🎣",
+        "eng_yaxshi_vaqt": "Bahor va Kuz",
+    },
+    "🏝 Nukus": {
+        "joylar": ["Savitskiy nomidagi muzey", "Orol dengizi xarobalari", "Nukus bozori", "Qoraqalpog'iston davlat muzeyi"],
+        "taom": ["Qoraqalpog'iston palov", "Baliq taomi", "Somsa", "Mastava"],
+        "maslahat": "Savitskiy muzeyi — dunyodagi noyob avant-garde san'at kolleksiyasi! 🎨",
+        "eng_yaxshi_vaqt": "Mart-May, Sentyabr-Noyabr",
+    },
+
+    # ===== QIRG'IZISTON =====
+    "🏔 Bishkek": {
+        "joylar": ["Ala-Too maydoni", "Osh bozori", "Manas haykali", "Frunze muzeyi", "Dордой bozori"],
+        "taom": ["Beshbarmak", "Lag'mon", "Manty", "Qimiz (ot suti)", "Kurut"],
+        "maslahat": "Osh bozorida milliy kiyim va xalq hunarmandchiligini albatta ko'ring! 🛍",
+        "eng_yaxshi_vaqt": "Iyun-Sentyabr",
+    },
+    "🏕 Issiqko'l": {
+        "joylar": ["Issiqko'l ko'li", "Cholpon-Ata", "Karakol shahri", "Jeti-Oguz qoyalari", "Barskoon sharsharasi"],
+        "taom": ["Beshbarmak", "Baliq taomi", "Manty", "Qimiz", "Shorpo"],
+        "maslahat": "Issiqko'l — dunyo eng katta tog' ko'llaridan biri, suvi qish ham muzlamaydi! 💎",
+        "eng_yaxshi_vaqt": "Iyun-Avgust (yozda cho'milish)",
+    },
+    "⛰ Osh": {
+        "joylar": ["Sulaymon tog'i", "Osh bozori", "Ravot masjidi", "Axunboboy ko'chasi"],
+        "taom": ["Osh palov", "Lag'mon", "Manty", "Samsa", "Shorpo"],
+        "maslahat": "Sulaymon tog'i — UNESCO ro'yxatidagi muqaddas joy! 🕌",
+        "eng_yaxshi_vaqt": "Aprel-Oktyabr",
+    },
+
+    # ===== ROSSIYA =====
+    "🏙 Moskva": {
+        "joylar": ["Qizil maydon", "Kreml", "Arbat ko'chasi", "Tretyakov galereyasi", "GUM do'koni", "Gorky parki"],
+        "taom": ["Borsh", "Pelmeni", "Beef Stroganoff", "Blini", "Shashlik"],
+        "maslahat": "Metro — eng qulay transport, 1 kartada hamma joyga borasan! 🚇",
+        "eng_yaxshi_vaqt": "May-Sentyabr (yoz), Dekabr (Yangi yil)",
+    },
+    "🏛 Sankt-Peterburg": {
+        "joylar": ["Ermitaj muzeyi", "Nevskiy prospekt", "Petrodvorets", "Qon to'kilgan cherkov", "Isaakiy sobori"],
+        "taom": ["Borsh", "Pelmeni", "Blini", "Ukha (baliq sho'rva)", "Pirozhki"],
+        "maslahat": "Oq tunlar (iyun) — Neva daryosida ko'priklar ko'tarilishini tomosha qiling! 🌉",
+        "eng_yaxshi_vaqt": "May-Sentyabr",
+    },
+
+    # ===== DUBAI =====
+    "🌆 Dubai": {
+        "joylar": ["Burj Khalifa", "Dubai Mall", "Palm Jumeirah", "Dubai Creek", "Desert Safari", "Burj Al Arab", "Dubai Frame"],
+        "taom": ["Shawarma", "Al Machboos", "Hummus", "Falafel", "Luqaimat", "Arabic BBQ"],
+        "maslahat": "Ramazon oyida kiyim-kechakka e'tibor bering. Metro arzon va qulay! 🚇",
+        "eng_yaxshi_vaqt": "Noyabr-Mart (salqin ob-havo)",
+    },
+    "🕌 Abu Dhabi": {
+        "joylar": ["Sheikh Zayed Grand Mosque", "Louvre Abu Dhabi", "Ferrari World", "Yas Island", "Corniche Beach"],
+        "taom": ["Machboos", "Harees", "Shawarma", "Luqaimat", "Camel burger"],
+        "maslahat": "Sheikh Zayed masjidi — dunyo eng go'zal masjidlaridan biri, bepul kirish! 🕌",
+        "eng_yaxshi_vaqt": "Oktyabr-Aprel",
+    },
+
+    # ===== SAUDIYA ARABISTONI =====
+    "🕋 Makka": {
+        "joylar": ["Masjid al-Haram", "Ka'ba", "Zamzam qudug'i", "Jabal al-Nur", "Mina", "Arafot"],
+        "taom": ["Kabsa", "Mandi", "Shawarma", "Mutabbaq", "Dates (xurmo)"],
+        "maslahat": "Faqat musulmonlar kirishi mumkin. Haj va Umra uchun oldindan ruxsat oling! 🤲",
+        "eng_yaxshi_vaqt": "Yil davomida (Haj — Zulhijja oyi)",
+    },
+    "🌴 Riyadh": {
+        "joylar": ["Kingdom Centre Tower", "Masmak qal'asi", "Diriyah", "National Museum", "Boulevard Riyadh"],
+        "taom": ["Kabsa", "Mandi", "Jareesh", "Mutabbaq", "Saleeg"],
+        "maslahat": "Diriyah — UNESCO ro'yxatidagi qadimiy shahar, albatta boring! 🏺",
+        "eng_yaxshi_vaqt": "Noyabr-Mart",
+    },
+    "🌊 Jidda": {
+        "joylar": ["Al-Balad (eski shahar)", "King Fahd favvorasi", "Corniche", "Floating Mosque", "Red Sea Mall"],
+        "taom": ["Kabsa", "Samak mashwi (grill baliq)", "Shawarma", "Mutabbaq", "Ful medames"],
+        "maslahat": "Al-Balad — UNESCO eski shahar, Qizil dengizda suv osti dunyosi ajoyib! 🤿",
+        "eng_yaxshi_vaqt": "Oktyabr-Aprel",
+    },
+
+    # ===== QO'SHMA SHTATLAR =====
+    "🗽 Nyu-York": {
+        "joylar": ["Ozodlik haykali", "Central Park", "Times Square", "Brooklyn ko'prigi", "Empire State Building", "Metropolitan Museum"],
+        "taom": ["New York pizza", "Hot dog", "Cheesecake", "Bagel", "Buffalo wings"],
+        "maslahat": "Metro 24/7 ishlaydi. MetroCard olish eng iqtisodiy variant! 🚇",
+        "eng_yaxshi_vaqt": "Aprel-Iyun, Sentyabr-Noyabr",
+    },
+    "🎬 Los-Anjeles": {
+        "joylar": ["Hollywood", "Disneyland", "Santa Monica Beach", "Universal Studios", "Getty Center", "Rodeo Drive"],
+        "taom": ["In-N-Out burger", "Fish tacos", "Avocado toast", "Korean BBQ", "Sushi"],
+        "maslahat": "Mashina ijaraga olish shart — jamoat transporti yaxshi emas! 🚗",
+        "eng_yaxshi_vaqt": "Mart-May, Sentyabr-Noyabr",
+    },
+    "🎰 Las-Vegas": {
+        "joylar": ["The Strip", "Fremont Street", "Grand Canyon", "Bellagio favvorasi", "Vegas kazinoları"],
+        "taom": ["All-you-can-eat buffet", "Prime rib", "Shrimp cocktail", "In-N-Out burger"],
+        "maslahat": "Grand Canyon ga bir kunlik sayohat qiling — hayotingizda unutmaslik! 🏜",
+        "eng_yaxshi_vaqt": "Mart-May, Sentyabr-Noyabr",
+    },
+    "🌁 San-Fransisko": {
+        "joylar": ["Golden Gate ko'prigi", "Alcatraz oroli", "Fisherman's Wharf", "Chinatown", "Silicon Valley"],
+        "taom": ["Clam chowder", "Sourdough bread", "Dungeness crab", "Mission burrito", "Dim sum"],
+        "maslahat": "Cable car — shaharning ramzi, albatta mining! Silicon Valley sayohati qo'shib oling. 🚃",
+        "eng_yaxshi_vaqt": "Sentyabr-Noyabr",
     },
 }
 
