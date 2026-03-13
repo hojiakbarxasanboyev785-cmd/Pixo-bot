@@ -9,7 +9,7 @@ from flask import Flask, request
 
 BOT_TOKEN = os.environ.get("8624963114:AAEZXFcXUnEEd5-mbuZ4BXH1bC-HWuHX_FM", "")
 WEATHER_API_KEY = os.environ.get("c4ba3f12c236fbe0bc8e5b383ba3df38", "")
-WEBHOOK_URL = os.environ.get("https://pixo-bot1.onrender.com/set_webhook", "")
+WEBHOOK_URL = os.environ.get("https://pixo-bot-1.onrender.com/set_webhook", "")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
